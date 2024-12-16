@@ -5,7 +5,7 @@
     session_destroy();
     $_SESSION = [];
 
-    // Redirect ke halaman login
-    header("Location: login.php");
+    // Redirect ke halaman home (guest)
+    header("Location: home.php");
     exit;
 ?>

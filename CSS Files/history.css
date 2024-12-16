@@ -1,13 +1,4 @@
 body {
-    background-image: url('../Account/Account.png');
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    color: #f2e86d;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     font-family: 'Cantata One', serif;
     font-size: 20px;
 }
