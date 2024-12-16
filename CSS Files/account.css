@@ -1,0 +1,30 @@
+body {
+    background-image: url('../Account/Account.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    color: #f2e86d;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Cantata One', serif;
+    font-size: 20px;
+}
+.navLogo {
+    height: auto;
+    width: 10%;
+}
+.navLogo2 {
+    height: auto;
+    width: 20%;
+}
+nav.navbar {
+    background-color: #e8f1f2;
+    font-family: "Figtree", sans-serif;
+}
+.btn{
+    color: #e8f1f2;
+    background-color: #ff7d02;
+    border-color: #ff7d02;
+}
