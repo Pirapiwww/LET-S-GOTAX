@@ -31,9 +31,14 @@ nav.navbar {
     font-family: "Figtree", sans-serif;
 }
 .btn{
-    color: #e8f1f2;
-    background-color: #ff7d02;
-    border-color: #ff7d02;
+    color: #e8f1f2 !important;
+    background-color: #ff7d02 !important;
+    border-color: #ff7d02 !important;
+}
+.btn:hover{
+    color: #e8f1f2 !important;
+    background-color: lightgray !important;
+    border-color: lightgray !important;
 }
 
 .hero-section {

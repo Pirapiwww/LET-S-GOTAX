@@ -1,6 +1,8 @@
 body {
     font-family: 'Cantata One', serif;
     font-size: 20px;
+    background-image: url('../Images/Settings/Settings.png');
+    background-repeat: no-repeat;
 }
 .navLogo {
     height: auto;
@@ -15,7 +17,22 @@ nav.navbar {
     font-family: "Figtree", sans-serif;
 }
 .btn{
-    color: #e8f1f2;
-    background-color: #ff7d02;
-    border-color: #ff7d02;
+    color: #e8f1f2 !important;
+    background-color: #ff7d02 !important;
+    border-color: #ff7d02 !important;
+}
+.btn:hover{
+    color: #e8f1f2 !important;
+    background-color: lightgray !important;
+    border-color: lightgray !important;
+}
+.cantarell{
+    font-family: "Cantarell", sans-serif;
+}
+.figtree{
+    font-family: "Figtree", sans-serif;
+}
+nav.navbar {
+    background-color: #e8f1f2;
+    font-family: "Figtree", sans-serif;
 }
