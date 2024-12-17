@@ -69,94 +69,51 @@ if ($isLoggedIn) {
                 echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
             }
         }
-    
-        // ** Bagian 2: Upload Foto Profil (photoProfile) dengan validasi lengkap **
-        if (isset($_FILES['photoProfile'])) {
-            $file = $_FILES['photoProfile'];
-            $fileName = $file['name'];
-            $fileTmpName = $file['tmp_name'];
-            $fileError = $file['error'];
-            $fileSize = $file['size'];
+        
+        // ** Bagian untuk Update Foto Profil **
+        if (isset($_FILES['newProfile']) && $_FILES['newProfile']['error'] == 0) {
+            $defaultImage = "profileDefault.jpg";
+            $targetDir = "Images/photoProfile/"; // Folder penyimpanan file
+            $fileName = time() . "_" . basename($_FILES["newProfile"]["name"]); // Nama file baru (dengan timestamp untuk unik)
+            $targetFilePath = $targetDir . $fileName; // Lokasi lengkap file
+            $fileType = pathinfo($targetFilePath, PATHINFO_EXTENSION); // Ekstensi file
 
-            // Periksa apakah tidak ada error saat mengupload
-            if ($fileError === 0) {
-                // Periksa ukuran file (maksimal 2MB)
-                $maxFileSize = 2 * 1024 * 1024; // 2MB dalam byte
-                if ($fileSize <= $maxFileSize) {
-                    // Validasi ekstensi file
-                    $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+            // Validasi jenis file (hanya gambar)
+            $allowTypes = array('jpg', 'png', 'jpeg', 'gif', 'bmp');
+            if (in_array(strtolower($fileType), $allowTypes)) {
+                // Ambil nama file lama dari database berdasarkan akunId pengguna
+                $query = "SELECT photoProfile FROM akun WHERE akunId = ?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param('i', $userId);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $oldFileName = $row['photoProfile'];
+                    $oldFilePath = $targetDir . $oldFileName;
 
-                    if (in_array($fileExt, $allowedExts)) {
-                        // Cek apakah file tersebut benar-benar gambar (bukan hanya ekstensi)
-                        $imageData = getimagesize($fileTmpName);
-                        if ($imageData === false) {
-                            echo "File yang diunggah bukan gambar yang valid.";
-                            exit;
-                        }
-
-                        // Buat nama file baru untuk menghindari duplikasi
-                        $newFileName = "profile_" . $userId . "." . $fileExt;
-                        $fileDestination = 'Images/photoProfile/' . $newFileName;
-
-                        // Ambil nama file foto profil lama dari database
-                        $query = "SELECT photoProfile FROM akun WHERE akunId = ?";
-                        $stmt = $conn->prepare($query);
-                        $stmt->bind_param('i', $userId);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-                        $oldFile = null;
-
-                        if ($result->num_rows > 0) {
-                            $row = $result->fetch_assoc();
-                            $oldFile = $row['photoProfile'];  // Menyimpan nama file lama
-                        }
-
-                        // Tentukan apakah foto profil lama adalah gambar default
-                        $defaultImage = "profileDefault.jpg";  // Misalnya file gambar default
-
-                        if ($oldFile && $oldFile != $defaultImage) {
-                            // Jika foto profil lama bukan gambar default, hapus file lama
-                            if (file_exists('Images/photoProfile/' . $oldFile)) {
-                                unlink('Images/photoProfile/' . $oldFile);  // Menghapus file lama
-                            }
-                        }                        
-                        // Update path tujuan dengan menggunakan path absolut
-                        $fileDestination = $_SERVER['DOCUMENT_ROOT'] . 'Images/photoProfile/' . $newFileName;
-
-                        echo "File Destination: " . $fileDestination . "<br>";
-                        
-                        // Debugging untuk memeriksa apakah path tujuan valid
-                        if (!is_writable($fileDestination)) {
-                            echo "File destination tidak dapat ditulis. Pastikan direktori dapat diakses oleh PHP.";
-                            exit;
-                        }
-                        
-                        // Pindahkan file ke folder tujuan
-                        if (move_uploaded_file($fileTmpName, $fileDestination)) {
-                            // Update path foto di database
-                            $updatePhotoQuery = "UPDATE akun SET photoProfile = ? WHERE akunId = ?";
-                            $stmt = $conn->prepare($updatePhotoQuery);
-                            $stmt->bind_param('si', $newFileName, $userId);
-
-                            if ($stmt->execute()) {
-                                echo "<script>window.location.href = window.location.href;</script>";  // Refresh halaman
-                                exit;
-                            } else {
-                                echo "Terjadi kesalahan saat memperbarui gambar profil di database.";
-                            }
-                            $stmt->close();
-                        } else {
-                            echo "Terjadi kesalahan saat mengunggah gambar.";
-                        }
-                    } else {
-                        echo "Hanya file dengan ekstensi JPG, JPEG, PNG, dan GIF yang diperbolehkan.";
+                    // Hapus file lama jika bukan file default
+                    if ($oldFileName != $defaultImage && file_exists($oldFilePath)) {
+                        unlink($oldFilePath); // Hapus file lama
                     }
+                }
+                $stmt->close();
+
+                // Pindahkan file baru ke folder tujuan
+                if (move_uploaded_file($_FILES["newProfile"]["tmp_name"], $targetFilePath)) {
+                    // Simpan nama file baru ke database
+                    $updateFileQuery = "UPDATE akun SET photoProfile = ? WHERE akunId = ?";
+                    $stmt = $conn->prepare($updateFileQuery);
+                    $stmt->bind_param('si', $fileName, $userId);
+                    $stmt->execute();
+                    $stmt->close();
+                    echo "<script>window.location.href = window.location.href;</script>";  // Refresh halaman
+                    echo "File berhasil diupload, file lama (jika bukan default) dihapus.";
                 } else {
-                    echo "File terlalu besar, maksimal 2MB.";
+                    echo "Maaf, terjadi kesalahan saat mengunggah file.";
                 }
             } else {
-                echo "Terjadi kesalahan saat mengunggah file.";
+                echo "Hanya file gambar (JPG, PNG, JPEG, GIF, BMP) yang diperbolehkan.";
             }
         }
     }
@@ -262,7 +219,7 @@ if ($isLoggedIn) {
                                                 <form action="" method="POST" enctype="multipart/form-data">
                                                     <div class="form-group">
                                                         <label for="fileInput" class="customLink">Choose a new profile picture</label>
-                                                        <input type="file" class="form-control" id="fileInput" name="photoProfile" accept="image/*" onchange="previewImage(event)">
+                                                        <input type="file" class="form-control" id="fileInput" name="newProfile" accept="image/*" onchange="previewImage(event)">
                                                     </div>
                                                     <div class="form-group mt-3">
                                                         <img id="preview" src="#" alt="Image Preview" class="img-fluid" style="display: none;">
@@ -337,7 +294,7 @@ if ($isLoggedIn) {
                                     <input type="password" class="form-control" id="password" name="password" placeholder="Enter your new Password">
                                 </div>
 
-                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                <button type="submit" class="btn btn-primary" name="submit">Save Changes</button>
                             </form>
                         </div>
                     </div>
