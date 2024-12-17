@@ -1,30 +1,125 @@
 <?php
-    // Memulai sesi untuk menyimpan data pengguna
-    session_start();
+// Memulai sesi untuk menyimpan data pengguna
+session_start();
 
-    // Include konfigurasi database
-    include 'config.php';
+// Include konfigurasi database
+include 'config.php';
 
-    // Periksa apakah pengguna sudah login
-    $isLoggedIn = isset($_SESSION['user_id']);
-    $userPhoto = '';
-    $username = '';
+// Periksa apakah pengguna sudah login
+$isLoggedIn = isset($_SESSION['user_id']);
 
-    if ($isLoggedIn) {
-        $userId = $_SESSION['user_id'];
-        $query = "SELECT photoProfile, username FROM akun WHERE akunId = ?";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param('i', $userId);
-        $stmt->execute();
-        $result = $stmt->get_result();
+// column tabel akun
+$userPhoto = '';
+$username = '';
+$email = '';
 
-        if ($result->num_rows > 0) {
-            $user = $result->fetch_assoc();
-            $userPhoto = $user['photoProfile'];
-            $username = $user['username'];
-        }
-        $stmt->close();
+//column tabel databio
+$namaLengkap = '';
+$nik = '';
+$selfieKTP = '';
+$photoKTP = '';
+$noHP = '';
+$kelamin = '';
+
+// untuk pesan error
+$error = '';
+
+// Jika pengguna login
+if ($isLoggedIn) {
+    $userId = $_SESSION['user_id'];
+    $query = "SELECT photoProfile, username, email FROM akun WHERE akunId = ?";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('i', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $user = $result->fetch_assoc();
+        $userPhoto = $user['photoProfile'];
+        $username = $user['username'];
+        $email = $user['email'];
     }
+    $stmt->close();
+
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+        // Inisialisasi user ID
+        $userId = $_SESSION['user_id'];
+    
+        // Upload Foto Profil (photoProfile) dengan validasi lengkap **
+        if (isset($_FILES['photoProfile'])) {
+            $file = $_FILES['photoProfile'];
+            $fileName = $file['name'];
+            $fileTmpName = $file['tmp_name'];
+            $fileError = $file['error'];
+            $fileSize = $file['size'];
+
+            // Periksa apakah tidak ada error saat mengupload
+            if ($fileError === 0) {
+                // Periksa ukuran file (maksimal 2MB)
+                if ($fileSize <= 2000000) {
+                    // Validasi ekstensi file
+                    $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                    $allowedExts = ['jpg', 'jpeg', 'png', 'gif'];
+
+                    if (in_array($fileExt, $allowedExts)) {
+                        // Buat nama file baru untuk menghindari duplikasi
+                        $newFileName = "profile_" . $userId . "." . $fileExt;
+                        $fileDestination = 'Images/photoProfile/' . $newFileName;
+
+                        // Ambil nama file foto profil lama dari database
+                        $query = "SELECT photoProfile FROM akun WHERE akunId = ?";
+                        $stmt = $conn->prepare($query);
+                        $stmt->bind_param('i', $userId);
+                        $stmt->execute();
+                        $result = $stmt->get_result();
+                        $oldFile = null;
+
+                        if ($result->num_rows > 0) {
+                            $row = $result->fetch_assoc();
+                            $oldFile = $row['photoProfile'];  // Menyimpan nama file lama
+                        }
+
+                        // Tentukan apakah foto profil lama adalah gambar default
+                        $defaultImage = "profileDefault.jpg";  // Misalnya file gambar default
+
+                        if ($oldFile && $oldFile != $defaultImage) {
+                            // Jika foto profil lama bukan gambar default, hapus file lama
+                            if (file_exists('Images/photoProfile/' . $oldFile)) {
+                                unlink('Images/photoProfile/' . $oldFile);  // Menghapus file lama
+                            }
+                        }
+
+                        // Pindahkan file ke folder tujuan
+                        if (move_uploaded_file($fileTmpName, $fileDestination)) {
+                            // Update path foto di database
+                            $updatePhotoQuery = "UPDATE akun SET photoProfile = ? WHERE akunId = ?";
+                            $stmt = $conn->prepare($updatePhotoQuery);
+                            $stmt->bind_param('si', $newFileName, $userId);
+
+                            if ($stmt->execute()) {
+                                // Kirim respons untuk refresh halaman
+                                echo "<script>refreshPage();</script>";
+                                exit;
+                            } else {
+                                echo "Terjadi kesalahan saat memperbarui gambar profil di database.";
+                            }
+                            $stmt->close();
+                        } else {
+                            echo "Terjadi kesalahan saat mengunggah gambar.";
+                        }
+                    } else {
+                        echo "Hanya file dengan ekstensi JPG, JPEG, PNG, dan GIF yang diperbolehkan.";
+                    }
+                } else {
+                    echo "File terlalu besar, maksimal 2MB.";
+                }
+            } else {
+                echo "Terjadi kesalahan saat mengunggah file.";
+            }
+        }
+    }
+}
 ?>
 
 <!doctype html>
@@ -36,10 +131,8 @@
         <link href="CSS Files/settings.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Cantarell:ital,wght@0,400;0,700;1,400;1,700&family=Cantata+One&family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
         <title>LET'S GOTAX</title>
         <link rel="icon" type="images/x-icon" href="images/let's gotax(logo).png">
-
     </head>
     <body>
         <!-- Navigation Bar -->
@@ -53,7 +146,7 @@
 
                 <!-- Login / Profil di kanan -->
                 <div class="ms-auto">
-                    <?php($isLoggedIn): ?>
+                    <?php if ($isLoggedIn): ?>
                     <div class="dropdown">
                             <a class="btn btn-light rounded-circle p-0" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                                 <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="40" height="40">
@@ -78,11 +171,10 @@
                                     <span class="spanCustom">Tax</span>
                                 </a></li>
                                 <li><a class="dropdown-item" href="point.php">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-coin" viewBox="0 0 16 16">
-                                    <path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518z"/>
-                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                                    <path d="M8 13.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11m0 .5A6 6 0 1 0 8 2a6 6 0 0 0 0 12"/>
-                                    </svg>    
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
+                                    <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
+                                    <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                                    </svg>
                                     <span class="spanCustom">Point</span>
                                 </a></li>
                                 <li><a class="dropdown-item" href="settings(account).php">
@@ -101,9 +193,135 @@
                                 </a></li>
                             </ul>
                         </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>
-    
+        <!-- Formulir Settings -->
+        <div class="container mt-5">
+            <div class="main-container">
+                <div class="row">
+                    <div class="col-md-3 sidebar">
+                        <div class="text-center mb-4">
+                            <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="150" height="150">
+                            <h5 class="mb-0 fw-bold spacing"><?php echo htmlspecialchars($username); ?></h5>
+                            <!-- Button untuk membuka modal -->
+                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#changeImageModal">Change</button>
+
+                            <!-- Modal untuk upload gambar -->
+                            <div class="modal fade" id="changeImageModal" tabindex="-1" aria-labelledby="changeImageModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="changeImageModalLabel">Change Profile Picture</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                                <form action="" method="POST" enctype="multipart/form-data">
+                                                    <div class="form-group">
+                                                        <label for="fileInput" class="customLink">Choose a new profile picture</label>
+                                                        <input type="file" class="form-control" id="fileInput" name="profilePicture" accept="image/*" onchange="previewImage(event)">
+                                                    </div>
+                                                    <div class="form-group mt-3">
+                                                        <img id="preview" src="#" alt="Image Preview" class="img-fluid" style="display: none;">
+                                                    </div>
+                                                    <div class="form-group mt-3">
+                                                        <button type="submit" class="btn btn-primary">Save Image</button>
+                                                    </div>
+                                                </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list-group">
+                            <a href="settings(account).php" class="list-group-item list-group-item-action">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0m4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4m-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10s-3.516.68-4.168 1.332c-.678.678-.83 1.418-.832 1.664z"/>
+                                </svg>
+                                <span class="spanCustom">Account</span>
+                            </a>
+                            <a href="settings(personal).php" class="list-group-item list-group-item-action active">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard2-data" viewBox="0 0 16 16">
+                                <path d="M9.5 0a.5.5 0 0 1 .5.5.5.5 0 0 0 .5.5.5.5 0 0 1 .5.5V2a.5.5 0 0 1-.5.5h-5A.5.5 0 0 1 5 2v-.5a.5.5 0 0 1 .5-.5.5.5 0 0 0 .5-.5.5.5 0 0 1 .5-.5z"/>
+                                <path d="M3 2.5a.5.5 0 0 1 .5-.5H4a.5.5 0 0 0 0-1h-.5A1.5 1.5 0 0 0 2 2.5v12A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-12A1.5 1.5 0 0 0 12.5 1H12a.5.5 0 0 0 0 1h.5a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5z"/>
+                                <path d="M10 7a1 1 0 1 1 2 0v5a1 1 0 1 1-2 0zm-6 4a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0zm4-3a1 1 0 0 0-1 1v3a1 1 0 1 0 2 0V9a1 1 0 0 0-1-1"/>
+                                </svg>
+                                <span class="spanCustom">Data Personal</span>
+                            </a>
+                            <a href="settings(tax).php" class="list-group-item list-group-item-action">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-car-front" viewBox="0 0 16 16">
+                                <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
+                                <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
+                                </svg>
+                                <span class="spanCustom">Tax History</span>
+                            </a>
+                            <a href="settings(point).php" class="list-group-item list-group-item-action">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
+                                <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
+                                <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                                </svg>
+                                <span class="spanCustom">Point History</span>
+                            </a>
+                            <a href="settings(contact).php" class="list-group-item list-group-item-action">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-lines-fill" viewBox="0 0 16 16">
+                                <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5m.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1z"/>
+                                </svg>
+                                <span class="spanCustom">Contact Us</span>
+                            </a>
+                        </div>
+                        <p style="padding-top: 20px;"><a href="#" class="text-danger">Delete Account</a></p>
+                    </div>
+
+                    <div class="col-md-9">
+                        <h3 class="mb-4">Data Personal Settings</h3>
+                        <hr>
+                        <form method="POST" action="" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <div class="custom">
+                                    <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                            <label for="namaLengkap" class="form-label">Full Name<span style="color: red;">*</span></label>
+                            <input type="text" class="form-control" id="namaLengkap" placeholder="Full Name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gender" class="form-label">Gender<span style="color: red;">*</span></label>
+                            <select id="gender" class="form-control" required>
+                                <option value="" disabled selected>Select your gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="noHP" class="form-label">Handphone Number<span style="color: red;">*</span></label>
+                            <input type="text" id="integerInput" class="form-control" placeholder="Enter exactly 12 digits of Handphone Number"
+                            pattern="^\d{12}$" required maxlength="12" oninput="validateIntegerLength(event)">
+                            <small id="numberHelp" class="form-text text-muted">Please enter exactly 12 digits of Handphone Number (numeric only).</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="nik" class="form-label">NIK<span style="color: red;">*</span></label>
+                            <input type="text" id="integerInput" class="form-control" placeholder="Enter exactly 12 digits of NIK"
+                            pattern="^\d{12}$" required maxlength="12" oninput="validateIntegerLength(event)">
+                            <small id="numberHelp" class="form-text text-muted">Please enter exactly 12 digits of NIK (numeric only).</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="imageInput" class="form-label">KTP Image<span style="color: red;">*</span></label>
+                            <input type="file" class="form-control" id="imageInput" accept="image/*" required>
+                            <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="imageInput" class="form-label">Selfie with KTP<span style="color: red;">*</span></label>
+                            <input type="file" class="form-control" id="imageInput" accept="image/*" required>
+                            <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="savePassword">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

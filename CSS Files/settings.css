@@ -1,9 +1,16 @@
 body {
-    font-family: 'Cantata One', serif;
-    font-size: 20px;
     background-image: url('../Images/Settings/Settings.png');
+    min-height: 100vh; 
+    display: flex;
+    justify-content: center;
+    font-family: 'Cantata One', serif;
     background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    align-items: flex-start; 
+    padding: 20px; 
 }
+
 .navLogo {
     height: auto;
     width: 10%;
@@ -22,6 +29,11 @@ nav.navbar {
     border-color: #ff7d02 !important;
 }
 .btn:hover{
+    background-color: #f2e86d !important;
+    color: black !important;
+    border: #f2e86d !important;
+}
+.custom:hover{
     color: #e8f1f2 !important;
     background-color: lightgray !important;
     border-color: lightgray !important;
@@ -35,4 +47,57 @@ nav.navbar {
 nav.navbar {
     background-color: #e8f1f2;
     font-family: "Figtree", sans-serif;
+}
+.active{
+    background-color: #09394a !important;
+}
+.profile-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid lightgray;
+}
+.main-container {
+    background-color: #e8f1f2; /* White background */
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    padding: 30px;
+    margin-top: 50px; /* Memberikan ruang dari atas halaman */
+    margin-bottom: 50px; /* Menambahkan ruang bawah agar tidak terlalu rapat */
+    max-width: 1500px; /* Batasi lebar maksimal form */
+    width: 100%; /* Pastikan form responsif */
+}
+#fileInput {
+    display: none;
+}
+.change-img-btn {
+    cursor: pointer;
+    color: #fff;
+    background-color: #ff7d02;
+    border: none;
+    padding: 5px 15px;
+    font-size: 14px;
+    border-radius: 5px;
+}
+.change-img-btn:hover {
+    background-color: #f2e86d;
+    color: black;
+}
+/* Sidebar Styling */
+.sidebar {
+    border-right: 1px solid #dee2e6; /* Add a border-right to create the separator */
+    padding-right: 20px;
+}
+.spacing{
+    padding-top: 15px;
+}
+.customLink{
+    color: #ff7d02;
+}
+.customLink:hover{
+    color:#f2e86d;
+}
+.spanCustom{
+    padding-left: 10px;
 }

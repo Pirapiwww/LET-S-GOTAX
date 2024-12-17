@@ -25,7 +25,7 @@
             $stmt_insert->bind_param("ssss", $username, $email, $password, $photoProfile);
 
             if ($stmt_insert->execute()) {
-                header("Location: home.php");
+                header("Location: login.php");
                 exit;
             } else {
                 $error = "Terjadi kesalahan saat mendaftar.";
