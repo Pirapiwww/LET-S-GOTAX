@@ -3,10 +3,11 @@
     include 'config.php';
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        //untuk tabel akun
         $email = $_POST['email'];
         $password = $_POST['password'];
 
-        // Query untuk validasi login
+        // Query untuk validasi login (akun)
         $sql = "SELECT * FROM akun WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $email);
@@ -44,6 +45,57 @@
                     $_SESSION['username'] = $user['username'];
 
                     header("Location: home.php");
+                    exit;
+                } else {
+                    $error = "Password salah!";
+                }
+            }
+        } else {
+            $error = "Email tidak ditemukan!";
+        }
+
+        //untuk tabel admin
+        $emailAdmin = $_POST['emailAdmin'];
+        $passwordAdmin = $_POST['passwordAdmin'];
+
+        // Query untuk validasi login (admin)
+        $sqlAdmin = "SELECT * FROM admin WHERE email = ?";
+        $stmtAdmin = $conn->prepare($sqlAdmin);
+        $stmtAdmin->bind_param("s", $emailAdmin);
+        $stmtAdmin->execute();
+        $resultAdmin = $stmtAdmin->get_result();
+
+        if ($resultAdmin->num_rows > 0) {
+            $userAdmin = $resultAdmin->fetch_assoc();
+
+            // Periksa apakah password di database belum di-hash
+            if (!password_verify($passwordAdmin, $userAdmin['password'])) {
+                // Jika password cocok tetapi belum di-hash, hash password tersebut
+                if ($passwordAdmin === $userAdmin['password']) {
+                    $hashed_password = password_hash($passwordAdmin, PASSWORD_DEFAULT);
+
+                    // Update password yang di-hash ke database
+                    $update_sql = "UPDATE admin SET password = ? WHERE adminId = ?";
+                    $stmt_update = $conn->prepare($update_sql);
+                    $stmt_update->bind_param("si", $hashed_password, $userAdmin['adminId']);
+                    $stmt_update->execute();
+
+                    // Login berhasil setelah hashing
+                    $_SESSION['user_id'] = $user['AdminId'];
+                    $_SESSION['username'] = $user['usernameAdmin'];
+
+                    header("Location: admin.php");
+                    exit;
+                } else {
+                    $error = "Password salah!";
+                }
+            } else {
+                // Jika password sudah di-hash, langsung verifikasi
+                if (password_verify($passwordAdmin, $userAdmin['password'])) {
+                    $_SESSION['user_id'] = $userAdmin['adminId'];
+                    $_SESSION['username'] = $userAdmin['usernameAdmin'];
+
+                    header("Location: admin.php");
                     exit;
                 } else {
                     $error = "Password salah!";
