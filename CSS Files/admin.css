@@ -1,0 +1,86 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: "Figtree", sans-serif;
+}
+:root {
+    --primary-orange: #FF7D02;
+    --dark-blue: #09394A;
+    --grey-blue: #3C6471;
+    --light-grey: #E8F1F2;
+    --pastel-yellow: #F2E86D;
+}
+
+.navLogo{
+    height: auto;
+    width: 10%;
+}
+.navLogo2{
+    height: auto;
+    width: 20%;
+}
+nav.navbar {
+    background-color: #e8f1f2;
+    font-family: "Figtree", sans-serif;
+}
+.navbar-nav .nav-link {
+    font-size: 1rem;
+    margin: 0 10px;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: var(--dark-blue);
+    color: white;
+    height: 100vh;
+}
+.sidebar h5 {
+    color: var(--primary-orange);
+}
+.sidebar nav a {
+    color: white;
+    padding: 10px;
+    display: block;
+    text-decoration: none;
+}
+.sidebar nav a:hover,
+.sidebar nav a.active {
+    background-color: var(--grey-blue);
+    border-radius: 5px;
+}
+
+/* Main Content */
+.main-content {
+    background-color: var(--light-grey);
+    height: 100vh;
+}
+.header {
+    background-color: var(--primary-orange);
+    color: white;
+    padding: 15px;
+}
+.stat-box {
+    background-color: white;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.stat-box.income {
+    background-color: var(--primary-orange);
+    color: white;
+}
+
+/* Table Styles */
+.table th {
+    background-color: var(--grey-blue);
+    color: white;
+}
+.table-bordered td {
+    background-color: white;
+}
+
+/* Customer List */
+.list-unstyled img {
+    width: 40px;
+    height: 40px;
+}

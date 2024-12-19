@@ -1,3 +1,4 @@
+//Function of all settings php
 function previewImage(event) {
     var reader = new FileReader();
     reader.onload = function() {
@@ -11,3 +12,6 @@ function previewImage(event) {
 function refreshPage() {
     location.reload();  // Segera me-refresh halaman
 }
+
+// Function of settings(personal).php
+
