@@ -11,14 +11,27 @@ include 'config.php';
 
 // Periksa apakah pengguna sudah login
 $isLoggedIn = isset($_SESSION['user_id']);
+
+//column tabel akun
 $userPhoto = '';
 $username = '';
-$email = '';
+
+//column tabel databio
+$namaLengkap = '';
+$nik = '';
+$selfieKTP = '';
+$photoKTP = '';
+$noHP = '';
+$kelamin = '';
+
+//untuk menyimppan error
 $error = '';
 
 // Jika pengguna login
 if ($isLoggedIn) {
     $userId = $_SESSION['user_id'];
+    
+    // Query untuk mengambil data dari tabek akun
     $query = "SELECT photoProfile, username, email FROM akun WHERE akunId = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $userId);
@@ -29,47 +42,152 @@ if ($isLoggedIn) {
         $user = $result->fetch_assoc();
         $userPhoto = $user['photoProfile'];
         $username = $user['username'];
-        $email = $user['email'];
     }
     $stmt->close();
+
+    // Query untuk mengambil data dari tabel databio
+    $query2 = "SELECT * FROM databio WHERE akunId = ?";
+    $stmt2 = $conn->prepare($query2);
+    $stmt2->bind_param('i', $userId);
+    $stmt2->execute();
+    $result2 = $stmt2->get_result();
+
+    if ($result2->num_rows > 0) {
+        $dataUser = $result2->fetch_assoc();
+        // Mengambil data dari tabel databio
+        $namaLengkap = $dataUser['namaLengkap'];
+        $nik = $dataUser['nik'];
+        $selfieKTP = $dataUser['photoKTPSelfie'];
+        $photoKTP = $dataUser['photoKTP'];
+        $noHP = $dataUser['noHP'];
+        $kelamin = $dataUser['kelamin'];
+    }
+    $stmt2->close();
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Inisialisasi user ID
         $userId = $_SESSION['user_id'];
     
-        // ** Bagian 1: Update Username, Email, dan Password **
-        if (isset($_POST['username']) || isset($_POST['email']) || isset($_POST['password'])) {
-            $newUsername = $_POST['username'] ?? null;
-            $newEmail = $_POST['email'] ?? null;
-            $newPassword = $_POST['password'] ?? null;
+        // ** Bagian 1: Menambahkan atau Update namaLengkap, nik, selfieKTP, photoKTP, noHP, dan kelamin **
+        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin'])) {
+            
+            $newNamaLengkap = $_POST['namaLengkap'] ?? null;
+            $newNIK = $_POST['nik'] ?? null;
+            $newNoHP = $_POST['noHP'] ?? null;
+            $newKelamin = $_POST['kelamin'] ?? null;
     
-            if (!empty($newPassword)) {
-                $newPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-                $updatePasswordQuery = "UPDATE akun SET password = ? WHERE akunId = ?";
-                $stmt = $conn->prepare($updatePasswordQuery);
-                $stmt->bind_param('si', $newPassword, $userId);
+            // Validasi NIK (16 digit)
+            if (!preg_match('/^\d{16}$/', $newNIK)) {
+                $error = "NIK harus terdiri dari 16 digit angka.";
+            }
+            // Validasi No HP (10 hingga 12 digit)
+            if (!preg_match('/^\d{10,12}$/', $newNoHP)) {
+                $error = "Nomor HP harus terdiri dari 10 hingga 12 digit angka.";
+            }
+
+            if ($result2->num_rows == 0) {
+                $addQuery = "INSERT INTO databio (akunId, namaLengkap, nik, noHP, kelamin) VALUES (?, ?, ?, ?, ?)";
+                $stmt = $conn->prepare($addQuery);
+                $stmt->bind_param('issss', $userId, $newNamaLengkap, $newNIK, $newNoHP, $newKelamin);
                 $stmt->execute();
                 $stmt->close();
                 echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
-            }
-            else if (!empty($newUsername)) {
-                $updateQuery = "UPDATE akun SET username = ? WHERE akunId = ?";
+            } else {
+                // Jika data sudah ada, update data yang berubah
+                $updateQuery = "UPDATE databio SET namaLengkap = ?, nik = ?, noHP = ?, kelamin = ? WHERE akunId = ?";
                 $stmt = $conn->prepare($updateQuery);
-                $stmt->bind_param('si', $newUsername, $userId);
-                $stmt->execute();
-                $stmt->close();
-                echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
-            }
-            else if (!empty($newEmail)) {
-                $updateQuery = "UPDATE akun SET email = ? WHERE akunId = ?";
-                $stmt = $conn->prepare($updateQuery);
-                $stmt->bind_param('si', $newEmail, $userId);
+                $stmt->bind_param('ssssi', $newNamaLengkap, $newNIK, $newNoHP, $newKelamin, $userId);
                 $stmt->execute();
                 $stmt->close();
                 echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
             }
         }
         
+        // ** Bagian untuk Update atau Add Foto KTP dan Selfie KTP **
+        if (isset($_FILES['photoKTP']) && $_FILES['photoKTP']['error'] == 0 && isset($_FILES['selfieKTP']) && $_FILES['selfieKTP']['error'] == 0) {
+
+            // Bagian untuk Photo KTP
+            $targetDir1 = "Images/data/photoKTP/"; // Folder penyimpanan file
+            $fileName1 = time() . "_" . basename($_FILES["photoKTP"]["name"]); // Nama file baru (dengan timestamp untuk unik)
+            $targetFilePath1 = $targetDir1 . $fileName1; // Lokasi lengkap file
+            $fileType1 = pathinfo($targetFilePath1, PATHINFO_EXTENSION); // Ekstensi file
+
+            // Bagian untuk Selfie KTP
+            $targetDir2 = "Images/data/selfieKTP/"; // Folder penyimpanan file
+            $fileName2 = time() . "_" . basename($_FILES["selfieKTP"]["name"]); // Nama file baru (dengan timestamp untuk unik)
+            $targetFilePath2 = $targetDir2 . $fileName2; // Lokasi lengkap file
+            $fileType2 = pathinfo($targetFilePath2, PATHINFO_EXTENSION); // Ekstensi file
+
+            // Validasi jenis file (hanya gambar)
+            $allowTypes = array('jpg', 'png', 'jpeg', 'gif', 'bmp');
+
+            if (in_array(strtolower($fileType1), $allowTypes) && in_array(strtolower($fileType2), $allowTypes)) {
+                // Proses foto KTP
+                $query = "SELECT photoKTP FROM databio WHERE akunId = ?";
+                $stmt = $conn->prepare($query);
+                $stmt->bind_param('i', $userId);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_assoc();
+                    $oldFileName = $row['photoKTP'];
+                    $oldFilePath = $targetDir1 . $oldFileName;
+
+                    // Hapus file lama jika ada
+                    if (file_exists($oldFilePath)) {
+                        unlink($oldFilePath); // Hapus file lama
+                    }
+                }
+                $stmt->close();
+
+                // Pindahkan file baru untuk Photo KTP
+                if (move_uploaded_file($_FILES["photoKTP"]["tmp_name"], $targetFilePath1)) {
+                    // Simpan nama file baru ke database
+                    $updateFileQuery = "UPDATE databio SET photoKTP = ? WHERE akunId = ?";
+                    $stmt = $conn->prepare($updateFileQuery);
+                    $stmt->bind_param('si', $fileName1, $userId);
+                    $stmt->execute();
+                } else {
+                    echo "Maaf, terjadi kesalahan saat mengunggah file KTP.";
+                }
+
+                // Proses Selfie KTP
+                $query2 = "SELECT photoKTPSelfie FROM databio WHERE akunId = ?";
+                $stmt2 = $conn->prepare($query2);
+                $stmt2->bind_param('i', $userId);
+                $stmt2->execute();
+                $result2 = $stmt2->get_result();
+                if ($result2->num_rows > 0) {
+                    $row2 = $result2->fetch_assoc();
+                    $oldFileName2 = $row2['photoKTPSelfie'];
+                    $oldFilePath2 = $targetDir2 . $oldFileName2;
+
+                    // Hapus file lama jika ada
+                    if (file_exists($oldFilePath2)) {
+                        unlink($oldFilePath2); // Hapus file lama
+                    }
+                }
+                $stmt2->close();
+
+                // Pindahkan file baru untuk Selfie KTP
+                if (move_uploaded_file($_FILES["selfieKTP"]["tmp_name"], $targetFilePath2)) {
+                    // Simpan nama file baru ke database
+                    $updateFileQuery2 = "UPDATE databio SET photoKTPSelfie = ? WHERE akunId = ?";
+                    $stmt2 = $conn->prepare($updateFileQuery2);
+                    $stmt2->bind_param('si', $fileName2, $userId);
+                    $stmt2->execute();
+                    $stmt2->close();
+                    echo "<script>window.location.href = window.location.href;</script>";  // Refresh halaman
+                    echo "File berhasil diupload, file lama dihapus.";
+                } else {
+                    echo "Maaf, terjadi kesalahan saat mengunggah file Selfie KTP.";
+                }
+            } else {
+                echo "Hanya file gambar (JPG, PNG, JPEG, GIF, BMP) yang diperbolehkan untuk KTP dan Selfie KTP.";
+            }
+        }
+
+
         // ** Bagian untuk Update Foto Profil **
         if (isset($_FILES['newProfile']) && $_FILES['newProfile']['error'] == 0) {
             $defaultImage = "profileDefault.jpg";
@@ -282,41 +400,40 @@ if ($isLoggedIn) {
                                 </div>
                             </div>
                             <div class="mb-3">
-                            <label for="namaLengkap" class="form-label">Full Name<span style="color: red;">*</span></label>
-                            <input type="text" class="form-control" id="namaLengkap" placeholder="Full Name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="gender" class="form-label">Gender<span style="color: red;">*</span></label>
-                            <select id="gender" class="form-control" required>
-                                <option value="" disabled selected>Select your gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="noHP" class="form-label">Handphone Number<span style="color: red;">*</span></label>
-                            <input type="text" id="integerInput" class="form-control" placeholder="Enter exactly 12 digits of Handphone Number"
-                            pattern="^\d{12}$" required maxlength="12" oninput="validateIntegerLength(event)">
-                            <small id="numberHelp" class="form-text text-muted">Please enter exactly 12 digits of Handphone Number (numeric only).</small>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="nik" class="form-label">NIK<span style="color: red;">*</span></label>
-                            <input type="text" id="integerInput" class="form-control" placeholder="Enter exactly 12 digits of NIK"
-                            pattern="^\d{12}$" required maxlength="12" oninput="validateIntegerLength(event)">
-                            <small id="numberHelp" class="form-text text-muted">Please enter exactly 12 digits of NIK (numeric only).</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="imageInput" class="form-label">KTP Image<span style="color: red;">*</span></label>
-                            <input type="file" class="form-control" id="imageInput" accept="image/*" required>
-                            <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="imageInput" class="form-label">Selfie with KTP<span style="color: red;">*</span></label>
-                            <input type="file" class="form-control" id="imageInput" accept="image/*" required>
-                            <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
-                        </div>
-                        <button type="submit" class="btn btn-primary" id="savePassword">Save Changes</button>
+                                <label for="namaLengkap" class="form-label">Full Name<span style="color: red;">*</span></label>
+                                <input type="text" class="form-control" id="namaLengkap" name="namaLengkap" value="<?php echo $namaLengkap; ?>" placeholder="Enter your full name" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="kelamin" class="form-label">Gender<span style="color: red;">*</span></label>
+                                <select id="kelamin" name="kelamin" class="form-control" required>
+                                    <option value="" disabled selected>Select your gender</option>
+                                    <option value="LAKI-LAKI" <?php echo ($kelamin == 'LAKI-LAKI') ? 'selected' : ''; ?>>Male</option>
+                                    <option value="PEREMPUAN" <?php echo ($kelamin == 'PEREMPUAN') ? 'selected' : ''; ?>>Female</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="noHP" class="form-label">Phone Number<span style="color: red;">*</span></label>
+                                <input type="text" name="noHP" id="noHP" class="form-control" value="<?php echo $noHP; ?>" placeholder="Enter exactly 10-12 digits of Phone Number" pattern="^\d{10,12}$" required>
+                                
+                                <small id="numberHelp" class="form-text text-muted">Please enter exactly 10-12 digits of Handphone Number (numeric only).</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="nik" class="form-label">NIK<span style="color: red;">*</span></label>
+                                <input type="text" name="nik" id="nik" class="form-control" value="<?php echo $nik; ?>" placeholder="Enter exactly 16 digits of NIK" pattern="^\d{16}$" required>
+                                <small id="numberHelp" class="form-text text-muted">Please enter exactly 16 digits of NIK (numeric only).</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="photoKTP" class="form-label">KTP Image<span style="color: red;">*</span></label>
+                                <input type="file" name="photoKTP" class="form-control" id="photoKTP" accept="image/*" required>
+                                <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="selfieKTP" class="form-label">Selfie with KTP<span style="color: red;">*</span></label>
+                                <input type="file" class="form-control" name="selfieKTP" id="selfieKTP" accept="image/*" required>
+                                <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="savePassword">Save Changes</button>
                         </form>
                     </div>
                 </div>
