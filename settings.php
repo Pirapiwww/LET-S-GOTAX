@@ -296,7 +296,7 @@ if ($isLoggedIn) {
         <nav class="navbar navbar-expand-lg navbar-light fixed-top">
             <div class="container">
                 <!-- Logo di kiri -->
-                <a class="navbar-brand me-auto" href="#">
+                <a class="navbar-brand me-auto" href="home.php">
                     <img src="images/let's gotax(logo).png" class="navLogo">
                     <img src="images/let's gotax (logo2).png" class="navLogo2">
                 </a>
@@ -361,8 +361,8 @@ if ($isLoggedIn) {
         </nav>
 
         <!-- Formulir Settings -->
-            <div class="container mt-5">
-                <div class="main-container">
+            <div class="container mt-5 ">
+                <div class="main-container justify-content-center">
                     <div class="row">
                         <div class="col-md-3 sidebar">
                             <div class="text-center mb-4">

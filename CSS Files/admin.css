@@ -34,6 +34,12 @@ nav.navbar {
     background-color: var(--dark-blue);
     color: white;
     height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 .sidebar h5 {
     color: var(--primary-orange);
@@ -54,6 +60,7 @@ nav.navbar {
 .main-content {
     background-color: var(--light-grey);
     height: 100vh;
+    margin-left: 260px;
 }
 .header {
     background-color: var(--primary-orange);
@@ -83,4 +90,8 @@ nav.navbar {
 .list-unstyled img {
     width: 40px;
     height: 40px;
+}
+.marginSideBar{
+    margin-top: 70px;
+    width: 260px;
 }

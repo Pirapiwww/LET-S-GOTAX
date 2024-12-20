@@ -45,7 +45,7 @@
         <nav class="navbar navbar-expand-lg navbar-light fixed-top">
             <div class="container">
                 <!-- Logo di kiri -->
-                <a class="navbar-brand me-auto" href="#">
+                <a class="navbar-brand me-auto" href="home.php">
                     <img src="images/let's gotax(logo).png" class="navLogo">
                     <img src="images/let's gotax (logo2).png" class="navLogo2">
                 </a>

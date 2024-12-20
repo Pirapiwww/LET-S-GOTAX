@@ -46,7 +46,7 @@
         <nav class="navbar navbar-expand-lg navbar-light fixed-top">
             <div class="container">
                 <!-- Logo di kiri -->
-                <a class="navbar-brand me-auto" href="#">
+                <a class="navbar-brand me-auto" href="home.php">
                     <img src="images/let's gotax(logo).png" class="navLogo">
                     <img src="images/let's gotax (logo2).png" class="navLogo2">
                 </a>
@@ -143,14 +143,25 @@
                         <h1>Quick & Secure </h1>
                         <h1>Vehicle Tax Payment</h1>
                         <p class="cantarell">Easily manage and pay your vehicle tax from anywhere.</p>
-                        <a href="tax.php" class="btn btn-warning btn-lg ">
-                            <span class="cantarell">
-                                Start Payment
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
-                                </svg>
-                            </span>
-                        </a>
+                        <?php if ($isLoggedIn): ?>
+                            <a href="tax.php" class="btn btn-warning btn-lg ">
+                                <span class="cantarell">
+                                    Start Payment
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+                                    </svg>
+                                </span>
+                            </a>
+                        <?php else: ?>
+                            <a href="login.php" class="btn btn-warning btn-lg ">
+                                <span class="cantarell">
+                                    Start Payment
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+                                    </svg>
+                                </span>
+                            </a>
+                    <?php endif; ?>
                     </div>
                 </div>
             </div>    
