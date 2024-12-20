@@ -70,19 +70,19 @@
             $userAdmin = $resultAdmin->fetch_assoc();
 
             // Periksa apakah password di database belum di-hash
-            if (!password_verify($passwordAdmin, $userAdmin['password'])) {
+            if (!password_verify($passwordAdmin, $userAdmin['passwordAdmin'])) {
                 // Jika password cocok tetapi belum di-hash, hash password tersebut
-                if ($passwordAdmin === $userAdmin['password']) {
+                if ($passwordAdmin === $userAdmin['passwordAdmin']) {
                     $hashed_password = password_hash($passwordAdmin, PASSWORD_DEFAULT);
 
                     // Update password yang di-hash ke database
-                    $update_sql = "UPDATE admin SET password = ? WHERE adminId = ?";
+                    $update_sql = "UPDATE admin SET passwordAdmin = ? WHERE adminId = ?";
                     $stmt_update = $conn->prepare($update_sql);
                     $stmt_update->bind_param("si", $hashed_password, $userAdmin['adminId']);
                     $stmt_update->execute();
 
                     // Login berhasil setelah hashing
-                    $_SESSION['user_id'] = $user['AdminId'];
+                    $_SESSION['user_id'] = $user['adminId'];
                     $_SESSION['username'] = $user['usernameAdmin'];
 
                     header("Location: admin.php");
@@ -92,7 +92,7 @@
                 }
             } else {
                 // Jika password sudah di-hash, langsung verifikasi
-                if (password_verify($passwordAdmin, $userAdmin['password'])) {
+                if (password_verify($passwordAdmin, $userAdmin['passwordAdmin'])) {
                     $_SESSION['user_id'] = $userAdmin['adminId'];
                     $_SESSION['username'] = $userAdmin['usernameAdmin'];
 

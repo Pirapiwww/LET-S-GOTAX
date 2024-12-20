@@ -6,15 +6,7 @@ body {
     background-size: cover;
     background-attachment: fixed;
     align-items: flex-start; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.container{
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-}  
+} 
 
 .navLogo {
     height: auto;
@@ -72,9 +64,6 @@ nav.navbar {
     margin-bottom: 50px; /* Menambahkan ruang bawah agar tidak terlalu rapat */
     max-width: 1500px; /* Batasi lebar maksimal form */
     width: 100%; /* Pastikan form responsif */
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 #fileInput {

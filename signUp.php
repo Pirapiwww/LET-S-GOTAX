@@ -9,7 +9,7 @@
         // Path default untuk foto profil
         $photoProfile = 'profileDefault.jpg';
         $status = 'NOT VERIFIED';
-        $adminId = '1';
+        $adminId = 1;
 
         // Periksa apakah email atau username sudah terdaftar
         $sql_check = "SELECT * FROM akun WHERE email = ? OR username = ?";
