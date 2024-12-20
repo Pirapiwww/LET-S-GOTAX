@@ -28,13 +28,12 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `admin` (
-  `adminId` int(11) NOT NULL AUTO_INCREMENT,
+  `adminId` int(11) NOT NULL,
   `usernameAdmin` varchar(255) NOT NULL,
   `emailAdmin` varchar(255) NOT NULL,
   `passwordAdmin` varchar(255) NOT NULL,
   `profileAdmin` varchar(255) NOT NULL,
-  `last_login` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`adminId`)
+  `last_login` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -42,12 +41,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`adminId`, `usernameAdmin`, `emailAdmin`, `passwordAdmin`, `profileAdmin`, `last_login`) VALUES
-(1, 'SuperAdmin', 'superr@gmail.com', 'AdminSuper', 'profileDefault.jpg', '2024-12-20 09:53:38')
-ON DUPLICATE KEY UPDATE `adminId` = `adminId`;
-
--- Add unique index for `emailAdmin`
-ALTER TABLE `admin`
-  ADD UNIQUE KEY `emailAdmin` (`emailAdmin`);
+(1, 'SuperAdmin', 'superr@gmail.com', 'AdminSuper', 'profileDefault.jpg', '2024-12-20 09:53:38');
 
 -- --------------------------------------------------------
 
@@ -56,15 +50,13 @@ ALTER TABLE `admin`
 --
 
 CREATE TABLE `akun` (
-  `akunId` int(11) NOT NULL AUTO_INCREMENT,
+  `akunId` int(11) NOT NULL,
   `adminId` int(11) NOT NULL,
-  `email` varchar(255) NOT NULL UNIQUE,
+  `email` varchar(255) NOT NULL,
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `photoProfile` varchar(255) NOT NULL,
-  `status` enum('VERIFIED','NOT VERIFIED') NOT NULL,
-  PRIMARY KEY (`akunId`),
-  FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`) ON DELETE CASCADE
+  `status` enum('VERIFIED','NOT VERIFIED') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -81,22 +73,16 @@ INSERT INTO `akun` (`akunId`, `adminId`, `email`, `username`, `password`, `photo
 --
 
 CREATE TABLE `databio` (
-  `databioId` int(11) NOT NULL AUTO_INCREMENT,
+  `databioId` int(11) NOT NULL,
   `akunId` int(11) NOT NULL,
   `adminId` int(11) NOT NULL,
   `namaLengkap` varchar(255) NOT NULL,
   `alamat` varchar(255) NOT NULL,
-  `nik` char(16) NOT NULL UNIQUE,
+  `nik` char(16) NOT NULL,
   `photoKTPSelfie` varchar(255) NOT NULL,
   `photoKTP` varchar(255) NOT NULL,
   `noHP` char(12) NOT NULL,
-  `kelamin` enum('LAKI-LAKI','PEREMPUAN') NOT NULL,
-  PRIMARY KEY (`databioId`),
-  UNIQUE KEY `noHP` (`noHP`),
-  KEY `akunId` (`akunId`),
-  KEY `adminId` (`adminId`),
-  CONSTRAINT `databio_ibfk_1` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`),
-  CONSTRAINT `databio_ibfk_2` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`)
+  `kelamin` enum('LAKI-LAKI','PEREMPUAN') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -112,13 +98,7 @@ CREATE TABLE `kendaraan` (
   `No_Plat` varchar(20) NOT NULL,
   `Jumlah_Biaya` decimal(10,2) NOT NULL,
   `tgl_Jatuh_Tempo` date NOT NULL,
-  `akunId` int(11) NOT NULL,
-  PRIMARY KEY (`id_kendaraan`),
-  UNIQUE KEY `No_Rangka` (`No_Rangka`),
-  UNIQUE KEY `No_Mesin` (`No_Mesin`),
-  UNIQUE KEY `No_Plat` (`No_Plat`),
-  KEY `akunId` (`akunId`),
-  CONSTRAINT `kendaraan_ibfk_1` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`)
+  `akunId` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -152,7 +132,9 @@ CREATE TABLE `pembayaran` (
   `Tanggal_Bayar` date NOT NULL,
   `Metode_Pembayaran` varchar(50) NOT NULL,
   `id_kendaraan` varchar(50) DEFAULT NULL,
-  `id_Status_Pembayaran` varchar(50) DEFAULT NULL
+  `id_Status_Pembayaran` varchar(50) DEFAULT NULL,
+  `status` enum('PENDING','PROCESSED','COMPLETED','FAILED') NOT NULL DEFAULT 'PENDING',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -225,16 +207,17 @@ ALTER TABLE `admin`
 ALTER TABLE `akun`
   ADD PRIMARY KEY (`akunId`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `adminId` (`adminId`);
+  ADD KEY `adminId` (`adminId`);
 
 --
 -- Indexes for table `databio`
 --
 ALTER TABLE `databio`
   ADD PRIMARY KEY (`databioId`),
+  ADD UNIQUE KEY `nik` (`nik`),
   ADD UNIQUE KEY `noHP` (`noHP`),
-  ADD KEY `akunId` (`akunId`),
-  ADD KEY `adminId` (`adminId`);
+  ADD KEY `adminId` (`adminId`),
+  ADD KEY `akunId` (`akunId`);
 
 --
 -- Indexes for table `kendaraan`
@@ -252,7 +235,8 @@ ALTER TABLE `kendaraan`
 ALTER TABLE `notif`
   ADD PRIMARY KEY (`notifId`),
   ADD UNIQUE KEY `akunId` (`akunId`),
-  ADD UNIQUE KEY `adminId` (`adminId`);
+  ADD UNIQUE KEY `adminId` (`adminId`),
+  ADD INDEX `tanggal_idx` (`tanggalNotif`);
 
 --
 -- Indexes for table `pembayaran`
