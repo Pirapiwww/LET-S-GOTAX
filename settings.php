@@ -38,7 +38,7 @@ if ($isLoggedIn) {
     $userId = $_SESSION['user_id'];
 
     // Query untuk mengambil data dari tabel akun
-    $query = "SELECT photoProfile, username, email FROM akun WHERE akunId = ?";
+    $query = "SELECT photoProfile, username, email, status FROM akun WHERE akunId = ?";
     $stmt = $conn->prepare($query);
     $stmt->bind_param('i', $userId);
     $stmt->execute();
@@ -49,7 +49,7 @@ if ($isLoggedIn) {
         $userPhoto = $user['photoProfile'];
         $username = $user['username'];
         $email = $user['email'];
-        $status = $user['status'];
+        $status = $user['status'] ?? 'UNVERIFIED'; // Provide default value if status is null
     }
     $stmt->close();
 
@@ -110,7 +110,7 @@ if ($isLoggedIn) {
         }
 
         // ** Bagian 2 : untuk Menambahkan atau Update namaLengkap, alamat, nik, selfieKTP, photoKTP, noHP, dan kelamin **
-        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin']) || isset($_POST['alamat']) ) {
+        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin']) || isset($_POST['alamat'])) {
             
             $newNamaLengkap = $_POST['namaLengkap'] ?? null;
             $newAlamat = $_POST['alamat'] ?? null;
@@ -119,29 +119,40 @@ if ($isLoggedIn) {
             $newKelamin = $_POST['kelamin'] ?? null;
     
             // Validasi NIK (16 digit)
-            if (!preg_match('/^\d{16}$/', $newNIK)) {
+            if (!empty($newNIK) && !preg_match('/^\d{16}$/', $newNIK)) {
                 $error = "NIK harus terdiri dari 16 digit angka.";
             }
             // Validasi No HP (10 hingga 12 digit)
-            if (!preg_match('/^\d{10,12}$/', $newNoHP)) {
+            if (!empty($newNoHP) && !preg_match('/^\d{10,12}$/', $newNoHP)) {
                 $error = "Nomor HP harus terdiri dari 10 hingga 12 digit angka.";
             }
 
-            if ($result2->num_rows == 0) {
-                $addQuery = "INSERT INTO databio (akunId, namaLengkap, alamat, nik, noHP, kelamin) VALUES (?, ?, ?, ?, ?, ?)";
-                $stmt = $conn->prepare($addQuery);
-                $stmt->bind_param('isssss', $userId, $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin);
-                $stmt->execute();
-                $stmt->close();
-                echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
-            } else {
-                // Jika data sudah ada, update data yang berubah
-                $updateQuery = "UPDATE databio SET namaLengkap = ?, alamat = ?, nik = ?, noHP = ?, kelamin = ? WHERE akunId = ?";
-                $stmt = $conn->prepare($updateQuery);
-                $stmt->bind_param('sssssi', $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $userId);
-                $stmt->execute();
-                $stmt->close();
-                echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
+            if (empty($error)) {
+                if ($result2->num_rows == 0) {
+                    // For new records, only include required fields and set adminId to 0
+                    $addQuery = "INSERT INTO databio (akunId, namaLengkap, alamat, nik, noHP, kelamin, adminId) VALUES (?, ?, ?, ?, ?, ?, 0)";
+                    $stmt = $conn->prepare($addQuery);
+                    $stmt->bind_param('isssss', $userId, $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin);
+                    $stmt->execute();
+                    $stmt->close();
+                    
+                    // Update status to PENDING in akun table
+                    $updateStatusQuery = "UPDATE akun SET status = 'PENDING' WHERE akunId = ?";
+                    $stmt = $conn->prepare($updateStatusQuery);
+                    $stmt->bind_param('i', $userId);
+                    $stmt->execute();
+                    $stmt->close();
+                    
+                    echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
+                } else {
+                    // Update existing record
+                    $updateQuery = "UPDATE databio SET namaLengkap = ?, alamat = ?, nik = ?, noHP = ?, kelamin = ? WHERE akunId = ?";
+                    $stmt = $conn->prepare($updateQuery);
+                    $stmt->bind_param('sssssi', $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $userId);
+                    $stmt->execute();
+                    $stmt->close();
+                    echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
+                }
             }
         }
 
