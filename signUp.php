@@ -8,7 +8,6 @@
 
         // Path default untuk foto profil
         $photoProfile = 'profileDefault.jpg';
-        $totalPoin = '0';
         $status = 'NOT VERIFIED';
         $adminId = '1';
 
@@ -23,9 +22,9 @@
             $error = "Email atau username sudah terdaftar!";
         } else {
             // Simpan data user dengan gambar default
-            $sql_insert = "INSERT INTO akun (adminId, username, email, password, photoProfile, totalPoin, status) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $sql_insert = "INSERT INTO akun (adminId, username, email, password, photoProfile, status) VALUES (?, ?, ?, ?, ?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
-            $stmt_insert->bind_param("sssssss", $adminId, $username, $email, $password, $photoProfile, $totalPoin, $status);
+            $stmt_insert->bind_param("ssssss", $adminId, $username, $email, $password, $photoProfile, $status);
 
             if ($stmt_insert->execute()) {
                 header("Location: login.php");

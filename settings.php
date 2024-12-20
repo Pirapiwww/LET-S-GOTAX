@@ -19,9 +19,11 @@ $isLoggedIn = isset($_SESSION['user_id']);
 $userPhoto = '';
 $username = '';
 $email = '';
+$status = '';
 
 //column tabel databio
 $namaLengkap = '';
+$alamat = '';
 $nik = '';
 $selfieKTP = '';
 $photoKTP = '';
@@ -47,6 +49,7 @@ if ($isLoggedIn) {
         $userPhoto = $user['photoProfile'];
         $username = $user['username'];
         $email = $user['email'];
+        $status = $user['status'];
     }
     $stmt->close();
 
@@ -60,6 +63,7 @@ if ($isLoggedIn) {
     if ($result2->num_rows > 0) {
         $dataUser = $result2->fetch_assoc();
         $namaLengkap = $dataUser['namaLengkap'];
+        $alamat = $dataUser['alamat'];
         $nik = $dataUser['nik'];
         $selfieKTP = $dataUser['photoKTPSelfie'];
         $photoKTP = $dataUser['photoKTP'];
@@ -105,10 +109,11 @@ if ($isLoggedIn) {
             }
         }
 
-        // ** Bagian 2 : untuk Menambahkan atau Update namaLengkap, nik, selfieKTP, photoKTP, noHP, dan kelamin **
-        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin'])) {
+        // ** Bagian 2 : untuk Menambahkan atau Update namaLengkap, alamat, nik, selfieKTP, photoKTP, noHP, dan kelamin **
+        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin']) || isset($_POST['alamat']) ) {
             
             $newNamaLengkap = $_POST['namaLengkap'] ?? null;
+            $newAlamat = $_POST['alamat'] ?? null;
             $newNIK = $_POST['nik'] ?? null;
             $newNoHP = $_POST['noHP'] ?? null;
             $newKelamin = $_POST['kelamin'] ?? null;
@@ -123,17 +128,17 @@ if ($isLoggedIn) {
             }
 
             if ($result2->num_rows == 0) {
-                $addQuery = "INSERT INTO databio (akunId, namaLengkap, nik, noHP, kelamin) VALUES (?, ?, ?, ?, ?)";
+                $addQuery = "INSERT INTO databio (akunId, namaLengkap, alamat, nik, noHP, kelamin) VALUES (?, ?, ?, ?, ?, ?)";
                 $stmt = $conn->prepare($addQuery);
-                $stmt->bind_param('issss', $userId, $newNamaLengkap, $newNIK, $newNoHP, $newKelamin);
+                $stmt->bind_param('isssss', $userId, $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin);
                 $stmt->execute();
                 $stmt->close();
                 echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
             } else {
                 // Jika data sudah ada, update data yang berubah
-                $updateQuery = "UPDATE databio SET namaLengkap = ?, nik = ?, noHP = ?, kelamin = ? WHERE akunId = ?";
+                $updateQuery = "UPDATE databio SET namaLengkap = ?, alamat = ?, nik = ?, noHP = ?, kelamin = ? WHERE akunId = ?";
                 $stmt = $conn->prepare($updateQuery);
-                $stmt->bind_param('ssssi', $newNamaLengkap, $newNIK, $newNoHP, $newKelamin, $userId);
+                $stmt->bind_param('sssssi', $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $userId);
                 $stmt->execute();
                 $stmt->close();
                 echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
@@ -224,7 +229,7 @@ if ($isLoggedIn) {
             }
         }
         
-        // ** Bagian 3: untuk Update Foto Profil **
+        // ** Bagian 4: untuk Update Foto Profil **
         if (isset($_FILES['newProfile']) && $_FILES['newProfile']['error'] == 0) {
             $defaultImage = "profileDefault.jpg";
             $targetDir = "Images/photoProfile/"; // Folder penyimpanan file
@@ -313,6 +318,12 @@ if ($isLoggedIn) {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
                                     <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
                                     </svg><span class="spanCustom"> Home</span>
+                                </a></li>
+                                <li><a class="dropdown-item" href="notif.php">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
+                                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6"/>
+                                    </svg>
+                                    <span class="spanCustom">Notification</span>
                                 </a></li>
                                 <li><a class="dropdown-item" href="tax.php">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-car-front" viewBox="0 0 16 16">
@@ -459,6 +470,16 @@ if ($isLoggedIn) {
                                 <h3 class="mb-4">Data Personal Settings</h3> <hr>
                                 <form method="POST" action="" enctype="multipart/form-data">
                                     <div class="mb-3">
+                                        <div>
+                                            NOTE :
+                                            <ul>
+                                                <li>Please fill in the personal data form to change the account status to "VERIFIED"</li>
+                                                <li>Accounts with "VERIFIED" status will get access to the "Tax" segment</li>
+                                                <li>Every tax payment in the "Tax" segment will get points (see the "Point" segment for more information)</li>
+                                            </ul> <hr>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
                                         <div class="custom">
                                             <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
                                         </div>
@@ -476,12 +497,15 @@ if ($isLoggedIn) {
                                         </select>
                                     </div>
                                     <div class="mb-3">
+                                        <label for="alamat" class="form-label">Home Address<span style="color: red;">*</span></label>
+                                        <textarea class="form-control" id="alamat" name="alamat" rows="2" maxlength="160" value="<?php echo $alamat; ?>" placeholder="Enter your home address"></textarea>
+                                    </div>
+                                    <div class="mb-3">
                                         <label for="noHP" class="form-label">Phone Number<span style="color: red;">*</span></label>
                                         <input type="text" name="noHP" id="noHP" class="form-control" value="<?php echo $noHP; ?>" placeholder="Enter exactly 10-12 digits of Phone Number" pattern="^\d{10,12}$" required>
                                         
                                         <small id="numberHelp" class="form-text text-muted">Please enter exactly 10-12 digits of Handphone Number (numeric only).</small>
                                     </div>
-                                    
                                     <div class="mb-3">
                                         <label for="nik" class="form-label">NIK<span style="color: red;">*</span></label>
                                         <input type="text" name="nik" id="nik" class="form-control" value="<?php echo $nik; ?>" placeholder="Enter exactly 16 digits of NIK" pattern="^\d{16}$" required>

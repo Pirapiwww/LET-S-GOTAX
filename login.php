@@ -34,9 +34,10 @@
                     $_SESSION['username'] = $user['username'];
 
                     header("Location: home.php");
+
                     exit;
                 } else {
-                    $error = "Password salah!";
+                    $error = "Password incorrect!";
                 }
             } else {
                 // Jika password sudah di-hash, langsung verifikasi
@@ -47,19 +48,19 @@
                     header("Location: home.php");
                     exit;
                 } else {
-                    $error = "Password salah!";
+                    $error = "Password incorrect!";
                 }
             }
         } else {
-            $error = "Email tidak ditemukan!";
+            $error = "Email incorrect or not found!";
         }
 
         //untuk tabel admin
-        $emailAdmin = $_POST['emailAdmin'];
-        $passwordAdmin = $_POST['passwordAdmin'];
+        $emailAdmin = $_POST['email'];
+        $passwordAdmin = $_POST['password'];
 
         // Query untuk validasi login (admin)
-        $sqlAdmin = "SELECT * FROM admin WHERE email = ?";
+        $sqlAdmin = "SELECT * FROM admin WHERE emailAdmin = ?";
         $stmtAdmin = $conn->prepare($sqlAdmin);
         $stmtAdmin->bind_param("s", $emailAdmin);
         $stmtAdmin->execute();
@@ -87,7 +88,7 @@
                     header("Location: admin.php");
                     exit;
                 } else {
-                    $error = "Password salah!";
+                    $error = "Password incorrect!";
                 }
             } else {
                 // Jika password sudah di-hash, langsung verifikasi
@@ -98,11 +99,11 @@
                     header("Location: admin.php");
                     exit;
                 } else {
-                    $error = "Password salah!";
+                    $error = "Password incorrect!";
                 }
             }
         } else {
-            $error = "Email tidak ditemukan!";
+            $error = "Email incorrect or not found!";
         }
     }
 ?>
