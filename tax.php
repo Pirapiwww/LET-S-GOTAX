@@ -53,7 +53,7 @@
 
                 <!-- Login / Profil di kanan -->
                 <div class="ms-auto">
-                    <?php($isLoggedIn): ?>
+                    <?php if ($isLoggedIn) { ?>
                         <div class="dropdown">
                             <a class="btn btn-light rounded-circle p-0" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                                 <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="40" height="40">
@@ -100,6 +100,7 @@
                                 </a></li>
                             </ul>
                         </div>
+                    <?php } ?>
                 </div>
             </div>
         </nav>
