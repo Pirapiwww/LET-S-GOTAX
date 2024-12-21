@@ -132,7 +132,9 @@ CREATE TABLE `pembayaran` (
   `Tanggal_Bayar` date NOT NULL,
   `Metode_Pembayaran` varchar(50) NOT NULL,
   `id_kendaraan` varchar(50) DEFAULT NULL,
-  `id_Status_Pembayaran` varchar(50) DEFAULT NULL
+  `id_Status_Pembayaran` varchar(50) DEFAULT NULL,
+  `status` enum('PENDING','PROCESSED','COMPLETED','FAILED') NOT NULL DEFAULT 'PENDING',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -205,7 +207,7 @@ ALTER TABLE `admin`
 ALTER TABLE `akun`
   ADD PRIMARY KEY (`akunId`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD UNIQUE KEY `adminId` (`adminId`);
+  ADD KEY `adminId` (`adminId`);
 
 --
 -- Indexes for table `databio`
@@ -214,7 +216,7 @@ ALTER TABLE `databio`
   ADD PRIMARY KEY (`databioId`),
   ADD UNIQUE KEY `nik` (`nik`),
   ADD UNIQUE KEY `noHP` (`noHP`),
-  ADD UNIQUE KEY `adminId` (`adminId`),
+  ADD KEY `adminId` (`adminId`),
   ADD KEY `akunId` (`akunId`);
 
 --
@@ -233,7 +235,8 @@ ALTER TABLE `kendaraan`
 ALTER TABLE `notif`
   ADD PRIMARY KEY (`notifId`),
   ADD UNIQUE KEY `akunId` (`akunId`),
-  ADD UNIQUE KEY `adminId` (`adminId`);
+  ADD UNIQUE KEY `adminId` (`adminId`),
+  ADD INDEX `tanggal_idx` (`tanggalNotif`);
 
 --
 -- Indexes for table `pembayaran`
