@@ -139,6 +139,35 @@ if ($isLoggedIn) {
             // Menutup statement cek setelah selesai
             $stmt_check->close();
         }
+
+        // ** Bagian untuk add data tax **
+        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax'])) {
+            $namaTax = $_POST['namaTax'] ?? null;
+            $plat = $_POST['plat'] ?? null;
+            $totalTax = $_POST['totalTax'] ?? null;
+
+            // Cek apakah email atau username sudah terdaftar
+            $sql_check = "SELECT * FROM tax";
+            $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->execute();
+            $result_check = $stmt_check->get_result();
+        
+            if ($result_check->num_rows > 0) {
+                // Jika email atau username sudah terdaftar
+                $error = "Data tax sudah terdaftar!";
+            } else {
+                // Simpan data user dengan gambar default
+                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak) VALUES (?, ?, ?, ?)";
+                $stmt_insert = $conn->prepare($sql_insert);
+                $stmt_insert->bind_param("ssss", $userId, $namaTax, $plat, $totalTax);
+                $stmt_insert->execute();
+                
+                $stmt_insert->close();
+            }
+        
+            // Menutup statement cek setelah selesai
+            $stmt_check->close();
+        }
         
 
         // ** Bagian untuk Update Foto Profil **
@@ -785,167 +814,79 @@ if ($isLoggedIn) {
 
                     <!-- Header -->
                     <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Dashboard</h4>
+                        <h4>Data Tax</h4>
                     </div>
 
-                    <!-- Stats Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>54</h5>
-                                <p>Customers</p>
+                    <div class="container mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>                                
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#AddTaxModal">Add Data</button>
+                                <!-- Modal untuk add data Tax -->
+                                <div class="modal fade" id="AddTaxModal" tabindex="-1" aria-labelledby="AddTaxModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog margin">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="AddTaxModalLabel">Add Tax Data Form</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="" method="POST" enctype="multipart/form-data">
+                                                    <div class="mb-3">
+                                                        <div class="custom">
+                                                            <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="namaTax" class="form-label">Full Name<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="namaTax" name="namaTax" placeholder="Enter full name" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="plat" class="form-label">Vehicle Plat<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="plat" name="plat" placeholder="Enter Vehicle Plat" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="totalTax" class="form-label">Total Tax<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="totalTax" name="totalTax" placeholder="Enter Total Tax" required>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary" name="submit">Add Data</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>79</h5>
-                                <p>Projects</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>124</h5>
-                                <p>Orders</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded income">
-                                <h5>$6K</h5>
-                                <p>Income</p>
-                            </div>
-                        </div>
-                    </div>
+                            <table class="table table-bordered align-middle" id="members-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Vehicle Plat</th>
+                                        <th>Full Name</th>
+                                        <th>Total Tax</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                        // Query untuk mengambil akun berdasarkan adminId yang sedang login
+                                        $queryTax= "SELECT * FROM tax";
+                                        $stmtTax = $conn->prepare($queryTax);
+                                        $stmtTax->execute();
+                                        $resultTax = $stmtTax->get_result();
 
-                    <!-- Recent Projects -->
-                    <div class="mb-4">
-                        <h5>Recent Projects</h5>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Project Title</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>UI/UX Design</td>
-                                    <td>UI Team</td>
-                                    <td class="text-info">Review</td>
-                                </tr>
-                                <tr>
-                                    <td>Web Development</td>
-                                    <td>Frontend</td>
-                                    <td class="text-success">In Progress</td>
-                                </tr>
-                                <tr>
-                                    <td>Ushop App</td>
-                                    <td>Mobile Team</td>
-                                    <td class="text-danger">Pending</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- New Customers -->
-                    <div>
-                        <h5>New Customers</h5>
-                        <ul class="list-unstyled">
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <?php
-                    //untuk point
-                } elseif ($page == 'point') {
-                    ?>
-
-                    <!-- Header -->
-                    <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Dashboard</h4>
-                    </div>
-
-                    <!-- Stats Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>54</h5>
-                                <p>Customers</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>79</h5>
-                                <p>Projects</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>124</h5>
-                                <p>Orders</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded income">
-                                <h5>$6K</h5>
-                                <p>Income</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Projects -->
-                    <div class="mb-4">
-                        <h5>Recent Projects</h5>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Project Title</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>UI/UX Design</td>
-                                    <td>UI Team</td>
-                                    <td class="text-info">Review</td>
-                                </tr>
-                                <tr>
-                                    <td>Web Development</td>
-                                    <td>Frontend</td>
-                                    <td class="text-success">In Progress</td>
-                                </tr>
-                                <tr>
-                                    <td>Ushop App</td>
-                                    <td>Mobile Team</td>
-                                    <td class="text-danger">Pending</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- New Customers -->
-                    <div>
-                        <h5>New Customers</h5>
-                        <ul class="list-unstyled">
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                        </ul>
-                    </div>
-
+                                        // Jika ada akun ditemukan
+                                        if($resultTax->num_rows > 0) {
+                                            while ($row = $resultTax->fetch_assoc()) {
+                                                ?>  
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($row['platKendaraan']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['namaLengkap']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['totalPajak']); ?></td>
+                                                </tr>
+                                                <?php
+                                            }
+                                        }
+                                    ?>
+                                </tbody>
+                            </table>
                     <?php
                     //untuk complaint
                 } elseif ($page == 'complaint') {
