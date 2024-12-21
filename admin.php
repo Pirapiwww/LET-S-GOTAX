@@ -156,7 +156,6 @@ if ($isLoggedIn) {
                 // Jika email atau username sudah terdaftar
                 $error = "Data tax sudah terdaftar!";
             } else {
-                // Simpan data user dengan gambar default
                 $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak) VALUES (?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
                 $stmt_insert->bind_param("ssss", $userId, $namaTax, $plat, $totalTax);
