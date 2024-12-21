@@ -203,7 +203,7 @@
                     <div class="col-md-3">
                         <div class="card text-center bg-light p-3 border-0 rounded-3 h-100">
                             <span class="service-image2"><img src="Images/Home/taxPayment.png" alt="Tax Check" class="mb-3 service-img"></span>
-                            <h5 class="custom color1">Tax Payment Service</h5>
+                            <h5 class="custom color1">Tax Payment</h5>
                             <h5>Service</h5>
                             <p class="text-muted small justify custom3 figtree">Securely pay your vehicle taxes anytime, anywhere.</p>
                         </div>

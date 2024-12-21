@@ -1,0 +1,43 @@
+body {
+    background-color: #e8f1f2;
+    font-family: Arial, sans-serif;
+}
+header {
+    background-color: #e8f1f2;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+header nav a {
+    margin-right: 20px;
+    color: #333;
+    text-decoration: none;
+}
+.navLogo {
+    height: auto;
+    width: 10%;
+}
+.navLogo2 {
+    height: auto;
+    width: 20%;
+}
+.hero {
+    padding: 40px;
+    text-align: center;
+}
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+footer {
+    background-color: #1d1d1d;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+    margin-top: 20px;
+}
+footer a {
+    color: #ffffff;
+    text-decoration: none;
+    margin: 0 10px;
+}

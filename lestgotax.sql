@@ -190,6 +190,24 @@ CREATE TABLE `user_messages` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cek_pajak`
+--
+
+CREATE TABLE `cek_pajak` (
+  `cekPajakId` int(11) NOT NULL AUTO_INCREMENT,
+  `databioId` int(11) NOT NULL,
+  `id_kendaraan` varchar(50) NOT NULL,
+  `tanggal_cek` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status_pajak` enum('LUNAS', 'BELUM LUNAS') NOT NULL,
+  `keterangan` text DEFAULT NULL,
+  PRIMARY KEY (`cekPajakId`),
+  FOREIGN KEY (`databioId`) REFERENCES `databio` (`databioId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  FOREIGN KEY (`id_kendaraan`) REFERENCES `kendaraan` (`id_kendaraan`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -307,6 +325,12 @@ ALTER TABLE `point`
 --
 ALTER TABLE `user_messages`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `cek_pajak`
+--
+ALTER TABLE `cek_pajak`
+  MODIFY `cekPajakId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
