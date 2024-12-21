@@ -43,9 +43,103 @@ if ($isLoggedIn) {
     }
     $stmt->close();
 
+    // query untuk perulangan adminId
+    $queryAdmins = "SELECT adminId FROM admin";
+    $resultAdmins = $conn->query($queryAdmins);
+
+    // untuk delete admin
+    if (isset($_GET['delete'])) {
+        $deleteAdminId = $_GET['delete'];
+    
+        // Cek apakah adminId yang akan dihapus ada di tabel akun
+        $checkQuery = "SELECT * FROM akun WHERE adminId = ?";
+        $stmtCheck = $conn->prepare($checkQuery);
+        $stmtCheck->bind_param('i', $deleteAdminId);
+        $stmtCheck->execute();
+        $resultCheck = $stmtCheck->get_result();
+    
+        if ($resultCheck->num_rows > 0) {
+            // Jika adminId ditemukan di tabel akun, ubah adminId di tabel akun menjadi 1 (SuperAdmin)
+            $updateQuery = "UPDATE akun SET adminId = 1 WHERE adminId = ?";
+            $stmtUpdate = $conn->prepare($updateQuery);
+            $stmtUpdate->bind_param('i', $deleteAdminId);
+            $stmtUpdate->execute();
+            $stmtUpdate->close();
+        }
+    
+        // Hapus admin dari tabel admin
+        $deleteQuery = "DELETE FROM admin WHERE adminId = ?";
+        $stmtDelete = $conn->prepare($deleteQuery);
+        $stmtDelete->bind_param('i', $deleteAdminId);
+        $stmtDelete->execute();
+        $stmtDelete->close();
+    
+        // Redirect setelah proses delete
+        header("Location: admin.php?pageAkun=admin"); // Redirect ke halaman admin
+        exit; // Pastikan tidak ada kode lain yang dieksekusi
+    }    
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Inisialisasi user ID
         $userId = $_SESSION['user_id'];
+
+        // Memproses perubahan adminId untuk setiap akun
+        foreach ($_POST as $key => $value) {
+            // Pastikan key sesuai dengan pola adminChange_akunId
+            if (strpos($key, 'adminChange_') === 0) {
+                // Mendapatkan akunId dari key
+                $akunId = str_replace('adminChange_', '', $key);
+                $newAdminId = $value;
+
+                // Update adminId untuk akun tertentu
+                $updateQuery = "UPDATE akun SET adminId = ? WHERE akunId = ?";
+                $stmtUpdate = $conn->prepare($updateQuery);
+                $stmtUpdate->bind_param('ii', $newAdminId, $akunId);
+                $stmtUpdate->execute();
+                $stmtUpdate->close();
+            }
+        }
+
+        // ** Bagian untuk add akun admin **
+        if (isset($_POST['username']) && isset($_POST['email']) && isset($_POST['password'])) {
+            $usernameAdmin = $_POST['username'] ?? null;
+            $emailAdmin = $_POST['email'] ?? null;
+            $passwordAdmin = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            $profileAdmin = 'profileDefault.jpg';
+        
+            // Cek apakah email atau username sudah terdaftar
+            $sql_check = "SELECT * FROM admin WHERE emailAdmin = ? OR usernameAdmin = ?";
+            $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bind_param("ss", $emailAdmin, $usernameAdmin);
+            $stmt_check->execute();
+            $result_check = $stmt_check->get_result();
+        
+            if ($result_check->num_rows > 0) {
+                // Jika email atau username sudah terdaftar
+                $error = "Email atau username sudah terdaftar!";
+            } else {
+                // Simpan data user dengan gambar default
+                $sql_insert = "INSERT INTO admin (usernameAdmin, emailAdmin, passwordAdmin, profileAdmin) VALUES (?, ?, ?, ?)";
+                $stmt_insert = $conn->prepare($sql_insert);
+                $stmt_insert->bind_param("ssss", $usernameAdmin, $emailAdmin, $passwordAdmin, $profileAdmin);
+        
+                // Eksekusi query insert
+                if ($stmt_insert->execute()) {
+                    // Jika berhasil
+                    echo "Admin berhasil ditambahkan!";
+                } else {
+                    // Jika terjadi error saat eksekusi insert
+                    $error = "Terjadi kesalahan saat menambahkan admin!";
+                }
+        
+                // Menutup statement setelah selesai
+                $stmt_insert->close();
+            }
+        
+            // Menutup statement cek setelah selesai
+            $stmt_check->close();
+        }
+        
 
         // ** Bagian untuk Update Foto Profil **
         if (isset($_FILES['newProfile']) && $_FILES['newProfile']['error'] == 0) {
@@ -59,7 +153,7 @@ if ($isLoggedIn) {
             $allowTypes = array('jpg', 'png', 'jpeg', 'gif', 'bmp');
             if (in_array(strtolower($fileType), $allowTypes)) {
                 // Ambil nama file lama dari database berdasarkan akunId pengguna
-                $query = "SELECT photoProfile FROM akun WHERE akunId = ?";
+                $query = "SELECT profileAdmin FROM admin WHERE akunId = ?";
                 $stmt = $conn->prepare($query);
                 $stmt->bind_param('i', $userId);
                 $stmt->execute();
@@ -79,7 +173,7 @@ if ($isLoggedIn) {
                 // Pindahkan file baru ke folder tujuan
                 if (move_uploaded_file($_FILES["newProfile"]["tmp_name"], $targetFilePath)) {
                     // Simpan nama file baru ke database
-                    $updateFileQuery = "UPDATE akun SET photoProfile = ? WHERE akunId = ?";
+                    $updateFileQuery = "UPDATE admin SET profileAdmin = ? WHERE adminId = ?";
                     $stmt = $conn->prepare($updateFileQuery);
                     $stmt->bind_param('si', $fileName, $userId);
                     $stmt->execute();
@@ -122,7 +216,7 @@ if ($isLoggedIn) {
 
                         <!-- Modal untuk upload gambar -->
                         <div class="modal fade" id="changeImageModal" tabindex="-1" aria-labelledby="changeImageModalLabel" aria-hidden="true">
-                            <div class="modal-dialog mt-5">
+                            <div class="modal-dialog margin">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="changeImageModalLabel">Change Profile Picture</h5>
@@ -234,145 +328,196 @@ if ($isLoggedIn) {
                     if ($pageAkun == 'user') {
                         ?>
                         </div>
-                        <table class="table table-bordered align-middle" id="members-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Photo</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                    $queryAkun = "SELECT * FROM akun WHERE adminId = ?";
-                                    $stmtAkun = $conn->prepare($queryAkun);
-                                    $stmtAkun->bind_param('i', $userId);
-                                    $stmtAkun->execute();
-                                    $resultAkun = $stmtAkun->get_result();
+                            <table class="table table-bordered align-middle" id="members-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Photo</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                        <th>Next Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                        // Query untuk mengambil akun berdasarkan adminId yang sedang login
+                                        $queryAkun = "SELECT * FROM akun WHERE adminId = ?";
+                                        $stmtAkun = $conn->prepare($queryAkun);
+                                        $stmtAkun->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
+                                        $stmtAkun->execute();
+                                        $resultAkun = $stmtAkun->get_result();
 
-                                    if($resultAkun->num_rows > 0) {
-                                        while ($row = $resultAkun->fetch_assoc()) {
-                                            ?>
-                                            <tr>
-                                                <td><img src="Images/photoProfile/<?php echo htmlspecialchars($row['photoProfile']); ?>" alt="Profile" class="rounded-circle" width="40" height="40"></td>
-                                                <td><?php echo htmlspecialchars($row['username']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                                <?php
-
-                                                if($row['status'] == 'VERIFIED'){
+                                        // Jika ada akun ditemukan
+                                        if($resultAkun->num_rows > 0) {
+                                            while ($row = $resultAkun->fetch_assoc()) {
+                                                ?>
+                                                <tr>
+                                                    <td><img src="Images/photoProfile/<?php echo htmlspecialchars($row['photoProfile']); ?>" alt="Profile" class="rounded-circle" width="40" height="40"></td>
+                                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                                    <?php
+                                                    // Menampilkan status berdasarkan nilai status
+                                                    if ($row['status'] == 'VERIFIED') {
+                                                        echo '<td><span class="badge bg-success">' . htmlspecialchars($row['status']) . '</span></td>';
+                                                    } elseif ($row['status'] == 'NOT VERIFIED') {
+                                                        echo '<td><span class="badge bg-danger">' . htmlspecialchars($row['status']) . '</span></td>';
+                                                    }
                                                     ?>
-                                                    <td><span class = "badge bg-success"><?php echo htmlspecialchars($row['status']); ?></span></td>
                                                     
-                                                    <?php
-                                                } elseif ($row['status'] == 'NOT VERIFIED'){
-                                                    ?>
-                                                    <td><span class = "badge bg-danger"><?php echo htmlspecialchars($row['status']); ?></span></td>
-                                                    <?php
-                                                }
-                                                    ?>
-                                                
-                                                <td>
-                                                <a href="admin.php?status=VERIFIED" class="btn btn-sm btn-primary">Verified Status</a>
-                                                <a href="admin.php?status=NOT VERIFIED" class="btn btn-sm btn-primary">Unverified Status</a>
-                                                </td>
-                                            </tr>
-                                                
-                                                <?php 
-                                                // ** Bagian untuk change status **
+                                                    <!-- Action untuk mengubah status -->
+                                                    <td>
+                                                        <a href="admin.php?status=VERIFIED" class="btn btn-sm btn-primary">Verified Status</a>
+                                                        <a href="admin.php?status=NOT VERIFIED" class="btn btn-sm btn-primary">Unverified Status</a>
+                                                    </td>
+
+                                                    <!-- Form untuk mengubah adminId -->
+                                                    <td>
+                                                        <form method="POST">
+                                                            <label class="paddingBtm" for="adminChange_<?php echo $row['akunId']; ?>">Change adminId</label>
+                                                            <select class="form-control" id="adminChange_<?php echo $row['akunId']; ?>" name="adminChange_<?php echo $row['akunId']; ?>">
+                                                                <?php
+                                                                    // Mengambil daftar adminId
+                                                                    $resultAdmins = $conn->query("SELECT adminId FROM admin"); // Pastikan query ini sesuai dengan struktur DB Anda
+                                                                    if($resultAdmins->num_rows > 0){
+                                                                        while ($rowAdmin = $resultAdmins->fetch_assoc()) {
+                                                                            ?>
+                                                                            <option value="<?php echo htmlspecialchars($rowAdmin['adminId']); ?>"
+                                                                                <?php echo $rowAdmin['adminId'] == $row['adminId'] ? 'selected' : ''; ?>>
+                                                                                <?php echo htmlspecialchars($rowAdmin['adminId']); ?>
+                                                                            </option>
+                                                                            <?php
+                                                                        }
+                                                                    }
+                                                                ?>
+                                                            </select>
+                                                            <input class="btn btn-sm btn-primary marginTop" type="submit" value="Change Admin">
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                                <?php
+                                                // ** Bagian untuk change status ** (Sudah ada di kode Anda)
                                                 if (isset($_GET['status'])) {
                                                     $status = $_GET['status'];
-                                                    // Memproses status yang diterima
-                                                    if ($status == 'VERIFIED') {
-                                                        $newStatus = 'VERIFIED';
-                                                        $updateFileQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
-                                                        $stmt = $conn->prepare($updateFileQuery);
-                                                        $stmt->bind_param('si', $newStatus, $row['akunId']);
-                                                        $stmt->execute();
-                                                        $stmt->close();
-                                                    } elseif ($status == 'NOT VERIFIED') {
-                                                        $newStatus = 'NOT VERIFIED';
-                                                        $updateFileQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
-                                                        $stmt = $conn->prepare($updateFileQuery);
-                                                        $stmt->bind_param('si', $newStatus, $row['akunId']);
-                                                        $stmt->execute();
-                                                        $stmt->close();
-                                                    } 
+                                                    if ($status == 'VERIFIED' || $status == 'NOT VERIFIED') {
+                                                        $newStatus = $status;
+                                                        $updateStatusQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
+                                                        $stmtStatus = $conn->prepare($updateStatusQuery);
+                                                        $stmtStatus->bind_param('si', $newStatus, $row['akunId']);
+                                                        $stmtStatus->execute();
+                                                        $stmtStatus->close();
+                                                    }
                                                 }
-                                        }
-                                    }  
-                                ?>
-                            </tbody>
-                        </table>
 
+                                                // ** Bagian untuk mengubah adminId ** setelah form disubmit
+                                                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                                    foreach ($_POST as $key => $value) {
+                                                        // Mengecek jika key sesuai dengan pola adminChange_akunId
+                                                        if (strpos($key, 'adminChange_') === 0) {
+                                                            $akunId = str_replace('adminChange_', '', $key); // Mendapatkan akunId dari key
+                                                            $newAdminId = $value;
+
+                                                            // Update adminId untuk akun tertentu
+                                                            $updateAdminQuery = "UPDATE akun SET adminId = ? WHERE akunId = ?";
+                                                            $stmtAdmin = $conn->prepare($updateAdminQuery);
+                                                            $stmtAdmin->bind_param('ii', $newAdminId, $akunId);
+                                                            $stmtAdmin->execute();
+                                                            $stmtAdmin->close();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }  
+                                    ?>
+                                </tbody>
+                            </table>
                         <?php
                         //untuk admin 
                     } elseif ($pageAkun == 'admin') {
                         ?>
-                            <div>
-                                <button class="btn btn-primary">Add New</button>
+                            <div>                                
+                                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#AddAdminModal">Add Admin</button>
+                                <!-- Modal untuk add Admin -->
+                                <div class="modal fade" id="AddAdminModal" tabindex="-1" aria-labelledby="AddAdminModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog margin">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="AddAdminModalLabel">Add Admin Form</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form action="" method="POST" enctype="multipart/form-data">
+                                                    <div class="mb-3">
+                                                        <div class="custom">
+                                                            <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="username" class="form-label">Username<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="email" class="form-label">Email<span style="color: red;">*</span></label>
+                                                        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="password" class="form-label">Password<span style="color: red;">*</span></label>
+                                                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password">
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary" name="submit">Add Admin</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <table class="table table-bordered align-middle" id="members-table">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Photo</th>
-                                    <th>Username</th>
-                                    <th>Email</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php 
-                                    $queryAdmin = "SELECT * FROM admin";
-                                    $stmtAdmin = $conn->prepare($queryAdmin);
-                                    $stmtAdmin->bind_param('i', $userId);
-                                    $stmtAdmin->execute();
-                                    $resultAdmin = $stmtAdmin->get_result();
+                            <table class="table table-bordered align-middle" id="members-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>AdminId</th>
+                                        <th>Photo</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php 
+                                        // Query untuk mengambil akun berdasarkan adminId yang sedang login
+                                        $queryAdmin = "SELECT * FROM admin";
+                                        $stmtAdmin = $conn->prepare($queryAdmin);
+                                        $stmtAdmin->execute();
+                                        $resultAdmin = $stmtAdmin->get_result();
 
-                                    $photoAkun = '';
-                                    $emailAKun = '';
-                                    $usernameAkun = '';
-                                    $statusAkun = '';
-
-                                    if($resultAkun->num_rows > 0) {
-                                        $user = $resultAkun->fetch_assoc();
-                                        $photoAkun = $user['photoProfile'];
-                                        $usernameAkun = $user['username'];
-                                        $emailAkun = $user['email'];
-                                        $statusAkun = $user['status'];
-                                        while($row = $resultAkun->fetch_assoc()){
-                                            ?>
-                                            <td><img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="40" height="40"></td>
-                                            <td><?php echo htmlspecialchars($usernameAkun); ?></td>
-                                            <td><?php echo htmlspecialchars($emailAkun); ?></td>
-
-                                                <?php
-                                            if($statusAkun == 'VERIFIED'){
-                                                ?>
-                                                <td><span class = "badge bg-success"><?php echo htmlspecialchars($statusAkun); ?></span></td>
-                                                <?php
-                                            } elseif ($statusAkun == 'NOT VERIFIED'){
-                                                ?>
-                                                <td><span class = "badge bg-danger"><?php echo htmlspecialchars($statusAkun); ?></span></td>
+                                        // Jika ada akun ditemukan
+                                        if($resultAdmin->num_rows > 0) {
+                                            while ($row = $resultAdmin->fetch_assoc()) {
+                                                ?>  
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($row['adminId']); ?></td>
+                                                    <td><img src="Images/photoProfile/<?php echo htmlspecialchars($row['profileAdmin']); ?>" alt="Profile" class="rounded-circle" width="40" height="40"></td>
+                                                    <td><?php echo htmlspecialchars($row['usernameAdmin']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['emailAdmin']); ?></td>
+                                                    <td>
+                                                        <?php 
+                                                            if($row['adminId'] != 1){ // Cek jika bukan adminId 1 (SuperAdmin)
+                                                                ?>
+                                                                <a href="admin.php?pageAkun=admin&delete=<?php echo $row['adminId']; ?>" class="btn btn-danger">Delete</a>
+                                                                <?php
+                                                            }
+                                                        ?>                                                    
+                                                    </td>
+                                                </tr>
                                                 <?php
                                             }
-                                                ?>
-                                            <td>
-
-                                        </td>
-
-                                            <?php
                                         }
-                                    }  
                                     ?>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
                         <?php
-                    }
-                        ?>
-                    
+                    } 
+                    ?>
                 </div>
 
                     <?php
@@ -392,18 +537,22 @@ if ($isLoggedIn) {
                                 <button class="btn btn-outline-primary active" id="btn-members">Users</button>
                             </div>
                         </div>
-
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5>Data Personal</h5>
+                            </div>
+                        </div>
                         <table class="table table-bordered align-middle" id="members-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Username</th>
                                     <th>Full Name</th>
                                     <th>Gender</th>
+                                    <th>Place and date of birth</th>
                                     <th>Handphone Number</th>
                                     <th>Home Address</th>
+                                    <th>Current Address</th>
                                     <th>NIK</th>
-                                    <th>KTP Image</th>
-                                    <th>Selfie with KTP</th>
                                 </tr>
                             </thead>
                                 <?php 
@@ -429,25 +578,103 @@ if ($isLoggedIn) {
                                                     
                                                     <td><?php echo htmlspecialchars($rowPersonal['namaLengkap']); ?></td>
                                                     <td><?php echo htmlspecialchars($rowPersonal['kelamin']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowPersonal['tanggalLahir']); ?></td>
                                                     <td><?php echo htmlspecialchars($rowPersonal['noHP']); ?></td>
                                                     <td><?php echo htmlspecialchars($rowPersonal['alamat']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowPersonal['alamatNow']); ?></td>
                                                     <td><?php echo htmlspecialchars($rowPersonal['nik']); ?></td>
-                                                    <td><?php echo htmlspecialchars($rowPersonal['noHP']); ?></td>
+                                                    
+                                                <?php
+                                                }
+                                            }
+                                        }
+                                    }  
+                                ?>
+                            </tbody>
+                        </table>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3 ">
+                            <div>
+                                <h5>Image Personal</h5>
+                            </div>
+                        </div>
+                        <table class="table table-bordered align-middle" id="members-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Username</th>
+                                    <th>KTP Image</th>
+                                    <th>Selfie with KTP</th>
+                                </tr>
+                            </thead>
+                                <?php 
+                                    $queryAkun1 = "SELECT username FROM akun WHERE adminId = ?";
+                                    $stmtAkun1 = $conn->prepare($queryAkun1);
+                                    $stmtAkun1->bind_param('i', $userId);
+                                    $stmtAkun1->execute();
+                                    $resultAkun1 = $stmtAkun1->get_result();
+
+                                    $queryPersonal = "SELECT * FROM databio WHERE adminId = ?";
+                                    $stmtPersonal = $conn->prepare($queryPersonal);
+                                    $stmtPersonal->bind_param('i', $userId);
+                                    $stmtPersonal->execute();
+                                    $resultPersonal = $stmtPersonal->get_result();
+
+                                    if($resultAkun1->num_rows > 0) {
+                                        while ($row = $resultAkun1->fetch_assoc()) {
+                                            if($resultPersonal->num_rows > 0) {
+                                                while ($rowPersonal = $resultPersonal->fetch_assoc()) {
+                                                ?>
+                                                <hr>
+                                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                                    
                                                     <td>
                                                         <div class="card">
                                                             <img src="Images/data/photoKTP/<?php echo $rowPersonal['photoKTP']; ?>" class="card-img-top image-thumbnail">
                                                             <div class="card-body">
-                                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img-src="<?php echo $imagePath; ?>">Preview</button>
+                                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal1" data-bs-img-src="Images/data/selfieKTP/<?php echo $rowPersonal['photoKTPSelfie']; ?>">
+                                                                    Preview
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal fade" id="imageModal1" tabindex="-1" aria-labelledby="imageModalLabel1" aria-hidden="true">
+                                                            <div class="modal-dialog modal-lg">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="imageModalLabel1">Preview Image</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <!-- Gambar yang akan ditampilkan di modal -->
+                                                                        <img id="modalImage" src="Images/data/photoKTP/<?php echo $rowPersonal['photoKTP']; ?>" class="img-fluid" alt="Image Preview">
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>    
                                                     </td>
                                                     <td>
                                                         <div class="card">
-                                                            <img src="Images/data/selfieKTP/<?php echo $rowPersonal['photoKTPSelfie']; ?>" class="card-img-top image-thumbnail">
+                                                            <img src="Images/data/selfieKTP/<?php echo $rowPersonal['photoKTPSelfie']; ?>" class="card-img-top image-thumbnail" alt="Photo">
                                                             <div class="card-body">
-                                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img-src="<?php echo $imagePath; ?>">Preview</button>
+                                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img-src="Images/data/selfieKTP/<?php echo $rowPersonal['photoKTPSelfie']; ?>">
+                                                                    Preview
+                                                                </button>
                                                             </div>
-                                                        </div>    
+                                                        </div>
+                                                        <!-- Modal untuk menampilkan gambar -->
+                                                        <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+                                                            <div class="modal-dialog modal-lg">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="imageModalLabel">Preview Image</h5>
+                                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <!-- Gambar yang akan ditampilkan di modal -->
+                                                                        <img id="modalImage" src="Images/data/selfieKTP/<?php echo $rowPersonal['photoKTPSelfie']; ?>" class="img-fluid" alt="Image Preview">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                 <?php
                                                 }
@@ -718,83 +945,54 @@ if ($isLoggedIn) {
 
                     <!-- Header -->
                     <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Dashboard</h4>
+                        <h4>Complaint</h4>
                     </div>
 
                     <!-- Stats Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>54</h5>
-                                <p>Customers</p>
+                    <div class="container mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <button class="btn btn-outline-primary active" id="btn-members">Users</button>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>79</h5>
-                                <p>Projects</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>124</h5>
-                                <p>Orders</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded income">
-                                <h5>$6K</h5>
-                                <p>Income</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Projects -->
-                    <div class="mb-4">
-                        <h5>Recent Projects</h5>
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-bordered align-middle" id="members-table">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Project Title</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
+                                    <th>Username</th>
+                                    <th>Title Complaint</th>
+                                    <th>Complaint</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>UI/UX Design</td>
-                                    <td>UI Team</td>
-                                    <td class="text-info">Review</td>
-                                </tr>
-                                <tr>
-                                    <td>Web Development</td>
-                                    <td>Frontend</td>
-                                    <td class="text-success">In Progress</td>
-                                </tr>
-                                <tr>
-                                    <td>Ushop App</td>
-                                    <td>Mobile Team</td>
-                                    <td class="text-danger">Pending</td>
-                                </tr>
+                                <?php 
+                                    $queryAkun1 = "SELECT username FROM akun WHERE adminId = ?";
+                                    $stmtAkun1 = $conn->prepare($queryAkun1);
+                                    $stmtAkun1->bind_param('i', $userId);
+                                    $stmtAkun1->execute();
+                                    $resultAkun1 = $stmtAkun1->get_result();
+
+                                    $queryContact = "SELECT * FROM contact WHERE adminId = ?";
+                                    $stmtContact = $conn->prepare($queryContact);
+                                    $stmtContact->bind_param('i', $userId);
+                                    $stmtContact->execute();
+                                    $resultContact = $stmtContact->get_result();
+
+                                    if($resultAkun1->num_rows > 0) {
+                                        while ($row = $resultAkun1->fetch_assoc()) {
+                                            if($resultContact->num_rows > 0) {
+                                                while ($rowContact = $resultContact->fetch_assoc()) {
+                                                ?>
+                                                <hr>
+                                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowContact['titleContact']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowContact['massageContact']); ?></td>
+                                                <?php
+                                                }
+                                            }
+                                        }
+                                    }  
+                                ?>
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- New Customers -->
-                    <div>
-                        <h5>New Customers</h5>
-                        <ul class="list-unstyled">
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                        </ul>
-                    </div>
-
                     <?php
                 }
                     ?>

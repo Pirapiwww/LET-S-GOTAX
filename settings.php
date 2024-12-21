@@ -24,11 +24,16 @@ $status = '';
 //column tabel databio
 $namaLengkap = '';
 $alamat = '';
+$alamatNow = '';
 $nik = '';
 $selfieKTP = '';
 $photoKTP = '';
 $noHP = '';
 $kelamin = '';
+$tanggalLahir = '';
+
+$adminId = '1';
+
 
 //untuk menyimppan error
 $error = '';
@@ -64,11 +69,13 @@ if ($isLoggedIn) {
         $dataUser = $result2->fetch_assoc();
         $namaLengkap = $dataUser['namaLengkap'];
         $alamat = $dataUser['alamat'];
+        $alamatNow = $dataUser['alamatNow'];
         $nik = $dataUser['nik'];
         $selfieKTP = $dataUser['photoKTPSelfie'];
         $photoKTP = $dataUser['photoKTP'];
         $noHP = $dataUser['noHP'];
         $kelamin = $dataUser['kelamin'];
+        $tanggalLahir = $dataUser['tanggalLahir'];
     }
     $stmt2->close();
 
@@ -110,14 +117,17 @@ if ($isLoggedIn) {
         }
 
         // ** Bagian 2 : untuk Menambahkan atau Update namaLengkap, alamat, nik, selfieKTP, photoKTP, noHP, dan kelamin **
-        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin']) || isset($_POST['alamat'])) {
+        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin']) || isset($_POST['alamat']) || isset($_POST['tanggalLahir']) || isset($_POST['alamatNow'])) {
             
             $newNamaLengkap = $_POST['namaLengkap'] ?? null;
             $newAlamat = $_POST['alamat'] ?? null;
+            $newAlamatNow = $_POST['alamatNow'] ?? null;
             $newNIK = $_POST['nik'] ?? null;
             $newNoHP = $_POST['noHP'] ?? null;
             $newKelamin = $_POST['kelamin'] ?? null;
-    
+            $newTanggalLahir = $_POST['tanggalLahir'] ?? null;
+            $adminId = 1;
+
             // Validasi NIK (16 digit)
             if (!empty($newNIK) && !preg_match('/^\d{16}$/', $newNIK)) {
                 $error = "NIK harus terdiri dari 16 digit angka.";
@@ -129,26 +139,18 @@ if ($isLoggedIn) {
 
             if (empty($error)) {
                 if ($result2->num_rows == 0) {
-                    // For new records, only include required fields and set adminId to 0
-                    $addQuery = "INSERT INTO databio (akunId, namaLengkap, alamat, nik, noHP, kelamin, adminId) VALUES (?, ?, ?, ?, ?, ?, 0)";
+                    $addQuery = "INSERT INTO databio (akunId, adminId, namaLengkap, alamat, nik, noHP, kelamin, alamatNow, tanggalLahir) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt = $conn->prepare($addQuery);
-                    $stmt->bind_param('isssss', $userId, $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin);
-                    $stmt->execute();
-                    $stmt->close();
-                    
-                    // Update status to PENDING in akun table
-                    $updateStatusQuery = "UPDATE akun SET status = 'PENDING' WHERE akunId = ?";
-                    $stmt = $conn->prepare($updateStatusQuery);
-                    $stmt->bind_param('i', $userId);
+                    $stmt->bind_param('iisssssss', $userId, $adminId, $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $newAlamatNow, $newTanggalLahir);
                     $stmt->execute();
                     $stmt->close();
                     
                     echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
                 } else {
                     // Update existing record
-                    $updateQuery = "UPDATE databio SET namaLengkap = ?, alamat = ?, nik = ?, noHP = ?, kelamin = ? WHERE akunId = ?";
+                    $updateQuery = "UPDATE databio SET namaLengkap = ?, alamat = ?, nik = ?, noHP = ?, kelamin = ?, alamatNow = ?, tanggalLahir = ? WHERE akunId = ?";
                     $stmt = $conn->prepare($updateQuery);
-                    $stmt->bind_param('sssssi', $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $userId);
+                    $stmt->bind_param('ssssssssi', $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $newAlamatNow, $newTanggalLahir, $userId);
                     $stmt->execute();
                     $stmt->close();
                     echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
@@ -286,6 +288,23 @@ if ($isLoggedIn) {
                 echo "Hanya file gambar (JPG, PNG, JPEG, GIF, BMP) yang diperbolehkan.";
             }
         }
+
+        // ** Bagian 5 : untuk add massage **
+        if (isset($_POST['usernameContact']) && isset($_POST['title']) && isset($_POST['massage'])) {
+            $username = $_POST['usernameContact'] ?? null;
+            $title = $_POST['title'] ?? null;
+            $massage = $_POST['massage'] ?? null;
+        
+            $adminId = 1; // Admin ID default
+            
+            $sql_insert = "INSERT INTO contact (akunId, adminId, titleContact, massageContact) VALUES (?, ?, ?, ?)";
+                
+            $stmt_insert = $conn->prepare($sql_insert);
+            $stmt_insert->bind_param("iiss", $userId, $adminId, $title, $massage); // Bind parameter
+            $stmt_insert->execute(); // Eksekusi query
+            $stmt_insert->close(); // Tutup prepared statement
+            
+        }
     }
 }
 
@@ -372,7 +391,7 @@ if ($isLoggedIn) {
         </nav>
 
         <!-- Formulir Settings -->
-            <div class="container mt-5 ">
+            <div class="container">
                 <div class="main-container justify-content-center">
                     <div class="row">
                         <div class="col-md-3 sidebar">
@@ -432,125 +451,136 @@ if ($isLoggedIn) {
                             </div>
                             <p style="padding-top: 20px;"><a href="#" class="text-danger">Delete Account</a></p>
                         </div>
-
-                        <div class="col-md-9">
                                 <?php
                                 //untuk account 
                             if ($page == 'account') {
                                 ?>
-                                <h3 class="mb-4">Account Settings</h3> <hr>
-                                <form method="POST" action="" enctype="multipart/form-data">
-                                    <div class="mb-3">
-                                        <div class="custom">
-                                            <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                <div class="col-md-9">
+                                    <h3 class="mb-4">Account Settings</h3> <hr>
+                                    <form method="POST" action="" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <div class="custom">
+                                                <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="username" class="form-label">Change Username (optional)</label>
-                                        <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="email" class="form-label">Change Email (optional)</label>
-                                        <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="password" class="form-label">Change Password (optional)</label>
-                                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your new Password">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary" name="submit">Save Changes</button>
-                                </form>
+                                        <div class="mb-3">
+                                            <label for="username" class="form-label">Change Username (optional)</label>
+                                            <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($username); ?>" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Change Email (optional)</label>
+                                            <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label">Change Password (optional)</label>
+                                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your new Password">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" name="submit">Save Changes</button>
+                                    </form>
+                                </div>
                             
                                 <?php
                                 // untuk data personal
                             } elseif ($page == 'personal') {
                                 ?>
-                                <h3 class="mb-4">Data Personal Settings</h3> <hr>
-                                <form method="POST" action="" enctype="multipart/form-data">
-                                    <div class="mb-3">
-                                        <div>
-                                            NOTE :
-                                            <ul>
-                                                <li>Please fill in the personal data form to change the account status to "VERIFIED"</li>
-                                                <li>Accounts with "VERIFIED" status will get access to the "Tax" segment</li>
-                                                <li>Every tax payment in the "Tax" segment will get points (see the "Point" segment for more information)</li>
-                                            </ul> <hr>
+                                <div class="col-md-9">
+                                    <h3 class="mb-4">Data Personal Settings</h3> <hr>
+                                    <form method="POST" action="" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <div>
+                                                NOTE :
+                                                <ul>
+                                                    <li>Please fill in the personal data form to change the account status to "VERIFIED"</li>
+                                                    <li>Accounts with "VERIFIED" status will get access to the "Tax" segment</li>
+                                                    <li>Every tax payment in the "Tax" segment will get points (see the "Point" segment for more information)</li>
+                                                </ul> <hr>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <div class="custom">
-                                            <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                        <div class="mb-3">
+                                            <div class="custom">
+                                                <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="namaLengkap" class="form-label">Full Name (KTP)<span style="color: red;">*</span></label>
-                                        <input type="text" class="form-control" id="namaLengkap" name="namaLengkap" value="<?php echo $namaLengkap; ?>" placeholder="Enter your full name" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="kelamin" class="form-label">Gender (KTP)<span style="color: red;">*</span></label>
-                                        <select id="kelamin" name="kelamin" class="form-control" required>
-                                            <option value="" disabled selected>Select your gender</option>
-                                            <option value="LAKI-LAKI" <?php echo ($kelamin == 'LAKI-LAKI') ? 'selected' : ''; ?>>Male</option>
-                                            <option value="PEREMPUAN" <?php echo ($kelamin == 'PEREMPUAN') ? 'selected' : ''; ?>>Female</option>
-                                        </select>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="alamat" class="form-label">Address (KTP)<span style="color: red;">*</span></label>
-                                        <textarea class="form-control" id="alamat" name="alamat" rows="2" maxlength="160" value="<?php echo $alamat; ?>" placeholder="Enter your home address"></textarea>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="noHP" class="form-label">Phone Number<span style="color: red;">*</span></label>
-                                        <input type="text" name="noHP" id="noHP" class="form-control" value="<?php echo $noHP; ?>" placeholder="Enter exactly 10-12 digits of Phone Number" pattern="^\d{10,12}$" required>
-                                        <small id="numberHelp" class="form-text text-muted">Please enter exactly 10-12 digits of Handphone Number (numeric only).</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="nik" class="form-label">NIK (KTP)<span style="color: red;">*</span></label>
-                                        <input type="text" name="nik" id="nik" class="form-control" value="<?php echo $nik; ?>" placeholder="Enter exactly 16 digits of NIK" pattern="^\d{16}$" required>
-                                        <small id="numberHelp" class="form-text text-muted">Please enter exactly 16 digits of NIK (numeric only).</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="photoKTP" class="form-label">KTP Image<span style="color: red;">*</span></label>
-                                        <input type="file" name="photoKTP" class="form-control" id="photoKTP" accept="image/*" required>
-                                        <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="selfieKTP" class="form-label">Selfie with KTP<span style="color: red;">*</span></label>
-                                        <input type="file" class="form-control" name="selfieKTP" id="selfieKTP" accept="image/*" required>
-                                        <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary" id="savePassword">Save Changes</button>
-                                </form>
-                                
+                                        <div class="mb-3">
+                                            <label for="namaLengkap" class="form-label">Full Name (KTP)<span style="color: red;">*</span></label>
+                                            <input type="text" class="form-control" id="namaLengkap" name="namaLengkap" value="<?php echo $namaLengkap; ?>" placeholder="Enter your full name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="kelamin" class="form-label">Gender (KTP)<span style="color: red;">*</span></label>
+                                            <select id="kelamin" name="kelamin" class="form-control" required>
+                                                <option value="" disabled selected>Select your gender</option>
+                                                <option value="LAKI-LAKI" <?php echo ($kelamin == 'LAKI-LAKI') ? 'selected' : ''; ?>>Male</option>
+                                                <option value="PEREMPUAN" <?php echo ($kelamin == 'PEREMPUAN') ? 'selected' : ''; ?>>Female</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="tanggalLahir" class="form-label">Place and date of birth (KTP)<span style="color: red;">*</span></label>
+                                            <input type="text" class="form-control" id="tanggalLahir" name="tanggalLahir" value="<?php echo $tanggalLahir; ?>" placeholder="Enter your place and date of birth" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="alamat" class="form-label">Address (KTP)<span style="color: red;">*</span></label>
+                                            <textarea class="form-control" id="alamat" name="alamat" rows="2" maxlength="160" placeholder="Enter your address"><?php echo $alamat; ?></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="alamatNow" class="form-label">Current Address<span style="color: red;">*</span></label>
+                                            <textarea class="form-control" id="alamatNow" name="alamatNow" rows="2" maxlength="160" placeholder="Enter your current address"><?php echo $alamatNow; ?></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="noHP" class="form-label">Phone Number<span style="color: red;">*</span></label>
+                                            <input type="text" name="noHP" id="noHP" class="form-control" value="<?php echo $noHP; ?>" placeholder="Enter exactly 10-12 digits of Phone Number" pattern="^\d{10,12}$" required>
+                                            <small id="numberHelp" class="form-text text-muted">Please enter exactly 10-12 digits of Handphone Number (numeric only).</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="nik" class="form-label">NIK (KTP)<span style="color: red;">*</span></label>
+                                            <input type="text" name="nik" id="nik" class="form-control" value="<?php echo $nik; ?>" placeholder="Enter exactly 16 digits of NIK" pattern="^\d{16}$" required>
+                                            <small id="numberHelp" class="form-text text-muted">Please enter exactly 16 digits of NIK (numeric only).</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="photoKTP" class="form-label">KTP Image<span style="color: red;">*</span></label>
+                                            <input type="file" name="photoKTP" class="form-control" id="photoKTP" accept="image/*" required>
+                                            <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="selfieKTP" class="form-label">Selfie with KTP<span style="color: red;">*</span></label>
+                                            <input type="file" class="form-control" name="selfieKTP" id="selfieKTP" accept="image/*" required>
+                                            <small id="imageHelp" class="form-text text-muted">Only image files are allowed (JPG, PNG, GIF).</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="savePassword">Save Changes</button>
+                                    </form>
+                                </div>
+
                                 <?php
                                 // untuk tax history
                             } elseif ($page == 'contact')  {
                                 ?>
-                                <h3 class="mb-4">Contact Us</h3>
-                                <hr>
-                                <form method="POST" action="" enctype="multipart/form-data">
-                                    <div class="mb-3">
-                                        <div class="custom">
-                                            <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                <div class="col-md-9">
+                                    <h3 class="mb-4">Contact Us</h3>
+                                    <hr>
+                                    <form method="POST" action="" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <div class="custom">
+                                                <?php if ($error) echo "<p style='color:red;'>$error</p>"; ?>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="name" class="form-label">Username :</label>
-                                        <input type="text" class="form-control" id="username" value = <?php echo htmlspecialchars($username); ?> required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="title" class="form-label">Massage Title :</label>
-                                        <input type="text" class="form-control" id="title" placeholder="Enter Massage Title" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="massage" class="form-label">Massage :</label>
-                                        <textarea class="form-control" id="massage" rows="2" maxlength="160" placeholder="Enter your massage"></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary" id="savePassword">Send Massage</button>
-                                </form>
-
+                                        <div class="mb-3">
+                                            <label for="usernameContact" class="form-label">Username :</label>
+                                            <input type="text" class="form-control" id="usernameContact" name="usernameContact" value = <?php echo htmlspecialchars($username); ?> required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="title" class="form-label">Massage Title :</label>
+                                            <input type="text" class="form-control" id="title" name="title" placeholder="Enter Massage Title" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="massage" class="form-label">Massage :</label>
+                                            <textarea class="form-control" id="massage" name="massage" rows="2" maxlength="160" placeholder="Enter your massage"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary" id="savePassword">Send Massage</button>
+                                    </form>
+                                </div>
                             <?php
                             }
                             ?>
-                        </div>
+
                     </div>
                 </div>
             </div>

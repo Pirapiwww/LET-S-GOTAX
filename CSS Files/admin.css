@@ -40,6 +40,7 @@ nav.navbar {
     height: 100%;
     padding: 20px;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 2000 !important; /* Sidebar z-index should be lower than modal */
 }
 .sidebar h5 {
     color: var(--primary-orange);
@@ -98,4 +99,27 @@ nav.navbar {
 .spacing{
     padding-top: 20px;
 }
+select {
+    width: 120px !important;
+}
+.margin{
+    margin-top: 100px;
+}
+.modal-backdrop {
+    z-index: 1040 !important; /* Default z-index for backdrop */
+}
+.modal {
+    z-index: 1050 !important; /* Modal z-index should be above the backdrop */
+}
+.paddingBtm{
+    padding-bottom: 10px;
+}
+.marginTop{
+    margin-top: 10px;
+}
+.color1{
+    color: var(--primary-orange) !important;
+}
+
+
 
