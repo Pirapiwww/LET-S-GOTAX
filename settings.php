@@ -471,11 +471,11 @@ if ($isLoggedIn) {
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="namaLengkap" class="form-label">Full Name<span style="color: red;">*</span></label>
+                                        <label for="namaLengkap" class="form-label">Full Name (KTP)<span style="color: red;">*</span></label>
                                         <input type="text" class="form-control" id="namaLengkap" name="namaLengkap" value="<?php echo $namaLengkap; ?>" placeholder="Enter your full name" required>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="kelamin" class="form-label">Gender<span style="color: red;">*</span></label>
+                                        <label for="kelamin" class="form-label">Gender (KTP)<span style="color: red;">*</span></label>
                                         <select id="kelamin" name="kelamin" class="form-control" required>
                                             <option value="" disabled selected>Select your gender</option>
                                             <option value="LAKI-LAKI" <?php echo ($kelamin == 'LAKI-LAKI') ? 'selected' : ''; ?>>Male</option>
@@ -483,17 +483,16 @@ if ($isLoggedIn) {
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="alamat" class="form-label">Home Address<span style="color: red;">*</span></label>
+                                        <label for="alamat" class="form-label">Address (KTP)<span style="color: red;">*</span></label>
                                         <textarea class="form-control" id="alamat" name="alamat" rows="2" maxlength="160" value="<?php echo $alamat; ?>" placeholder="Enter your home address"></textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label for="noHP" class="form-label">Phone Number<span style="color: red;">*</span></label>
                                         <input type="text" name="noHP" id="noHP" class="form-control" value="<?php echo $noHP; ?>" placeholder="Enter exactly 10-12 digits of Phone Number" pattern="^\d{10,12}$" required>
-                                        
                                         <small id="numberHelp" class="form-text text-muted">Please enter exactly 10-12 digits of Handphone Number (numeric only).</small>
                                     </div>
                                     <div class="mb-3">
-                                        <label for="nik" class="form-label">NIK<span style="color: red;">*</span></label>
+                                        <label for="nik" class="form-label">NIK (KTP)<span style="color: red;">*</span></label>
                                         <input type="text" name="nik" id="nik" class="form-control" value="<?php echo $nik; ?>" placeholder="Enter exactly 16 digits of NIK" pattern="^\d{16}$" required>
                                         <small id="numberHelp" class="form-text text-muted">Please enter exactly 16 digits of NIK (numeric only).</small>
                                     </div>

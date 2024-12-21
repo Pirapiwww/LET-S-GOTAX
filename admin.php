@@ -1,6 +1,7 @@
 <?php
 // Tentukan halaman default
 $page = isset($_GET['page']) ? $_GET['page'] : 'account';
+$pageAkun = isset($_GET['pageAkun']) ? $_GET['pageAkun'] : 'user';
 
 // Menampilkan semua error agar lebih mudah mendeteksi masalah
 ini_set('display_errors', 1);
@@ -45,8 +46,8 @@ if ($isLoggedIn) {
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Inisialisasi user ID
         $userId = $_SESSION['user_id'];
-    
-        // ** Bagian 4: untuk Update Foto Profil **
+
+        // ** Bagian untuk Update Foto Profil **
         if (isset($_FILES['newProfile']) && $_FILES['newProfile']['error'] == 0) {
             $defaultImage = "profileDefault.jpg";
             $targetDir = "Images/photoProfile/"; // Folder penyimpanan file
@@ -104,6 +105,7 @@ if ($isLoggedIn) {
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <link href="CSS Files/admin.css" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
         <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300..900&display=swap" rel="stylesheet">
         <title>LET'S GOTAX</title>
         <link rel="icon" type="images/x-icon" href="images/let's gotax(logo).png">
@@ -120,7 +122,7 @@ if ($isLoggedIn) {
 
                         <!-- Modal untuk upload gambar -->
                         <div class="modal fade" id="changeImageModal" tabindex="-1" aria-labelledby="changeImageModalLabel" aria-hidden="true">
-                            <div class="modal-dialog">
+                            <div class="modal-dialog mt-5">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="changeImageModalLabel">Change Profile Picture</h5>
@@ -216,83 +218,162 @@ if ($isLoggedIn) {
                     
                     <!-- Header -->
                     <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Dashboard</h4>
+                        <h4>Account</h4>
                     </div>
 
                     <!-- Stats Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>54</h5>
-                                <p>Customers</p>
+                    <div class="container mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <a href="admin.php?pageAkun=user" class="btn btn-outline-primary <?= $pageAkun == 'user' ? 'active' : '' ?>" >Users</a>
+                                <a href="admin.php?pageAkun=admin" class="btn btn-outline-primary <?= $pageAkun == 'admin' ? 'active' : '' ?>" >Admin</a>
                             </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>79</h5>
-                                <p>Projects</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>124</h5>
-                                <p>Orders</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded income">
-                                <h5>$6K</h5>
-                                <p>Income</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Recent Projects -->
-                    <div class="mb-4">
-                        <h5>Recent Projects</h5>
-                        <table class="table table-bordered">
-                            <thead>
+                        <?php
+                        //untuk user 
+                    if ($pageAkun == 'user') {
+                        ?>
+                        </div>
+                        <table class="table table-bordered align-middle" id="members-table">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Project Title</th>
-                                    <th>Department</th>
+                                    <th>Photo</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
                                     <th>Status</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>UI/UX Design</td>
-                                    <td>UI Team</td>
-                                    <td class="text-info">Review</td>
-                                </tr>
-                                <tr>
-                                    <td>Web Development</td>
-                                    <td>Frontend</td>
-                                    <td class="text-success">In Progress</td>
-                                </tr>
-                                <tr>
-                                    <td>Ushop App</td>
-                                    <td>Mobile Team</td>
-                                    <td class="text-danger">Pending</td>
-                                </tr>
+                                <?php 
+                                    $queryAkun = "SELECT * FROM akun WHERE adminId = ?";
+                                    $stmtAkun = $conn->prepare($queryAkun);
+                                    $stmtAkun->bind_param('i', $userId);
+                                    $stmtAkun->execute();
+                                    $resultAkun = $stmtAkun->get_result();
+
+                                    if($resultAkun->num_rows > 0) {
+                                        while ($row = $resultAkun->fetch_assoc()) {
+                                            ?>
+                                            <tr>
+                                                <td><img src="Images/photoProfile/<?php echo htmlspecialchars($row['photoProfile']); ?>" alt="Profile" class="rounded-circle" width="40" height="40"></td>
+                                                <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                                <td><?php echo htmlspecialchars($row['email']); ?></td>
+                                                <?php
+
+                                                if($row['status'] == 'VERIFIED'){
+                                                    ?>
+                                                    <td><span class = "badge bg-success"><?php echo htmlspecialchars($row['status']); ?></span></td>
+                                                    
+                                                    <?php
+                                                } elseif ($row['status'] == 'NOT VERIFIED'){
+                                                    ?>
+                                                    <td><span class = "badge bg-danger"><?php echo htmlspecialchars($row['status']); ?></span></td>
+                                                    <?php
+                                                }
+                                                    ?>
+                                                
+                                                <td>
+                                                <a href="admin.php?status=VERIFIED" class="btn btn-sm btn-primary">Verified Status</a>
+                                                <a href="admin.php?status=NOT VERIFIED" class="btn btn-sm btn-primary">Unverified Status</a>
+                                                </td>
+                                            </tr>
+                                                
+                                                <?php 
+                                                // ** Bagian untuk change status **
+                                                if (isset($_GET['status'])) {
+                                                    $status = $_GET['status'];
+                                                    // Memproses status yang diterima
+                                                    if ($status == 'VERIFIED') {
+                                                        $newStatus = 'VERIFIED';
+                                                        $updateFileQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
+                                                        $stmt = $conn->prepare($updateFileQuery);
+                                                        $stmt->bind_param('si', $newStatus, $row['akunId']);
+                                                        $stmt->execute();
+                                                        $stmt->close();
+                                                    } elseif ($status == 'NOT VERIFIED') {
+                                                        $newStatus = 'NOT VERIFIED';
+                                                        $updateFileQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
+                                                        $stmt = $conn->prepare($updateFileQuery);
+                                                        $stmt->bind_param('si', $newStatus, $row['akunId']);
+                                                        $stmt->execute();
+                                                        $stmt->close();
+                                                    } 
+                                                }
+                                        }
+                                    }  
+                                ?>
                             </tbody>
                         </table>
-                    </div>
 
-                    <!-- New Customers -->
-                    <div>
-                        <h5>New Customers</h5>
-                        <ul class="list-unstyled">
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                        </ul>
-                    </div>
+                        <?php
+                        //untuk admin 
+                    } elseif ($pageAkun == 'admin') {
+                        ?>
+                            <div>
+                                <button class="btn btn-primary">Add New</button>
+                            </div>
+                        </div>
+                        <table class="table table-bordered align-middle" id="members-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                    $queryAdmin = "SELECT * FROM admin";
+                                    $stmtAdmin = $conn->prepare($queryAdmin);
+                                    $stmtAdmin->bind_param('i', $userId);
+                                    $stmtAdmin->execute();
+                                    $resultAdmin = $stmtAdmin->get_result();
 
+                                    $photoAkun = '';
+                                    $emailAKun = '';
+                                    $usernameAkun = '';
+                                    $statusAkun = '';
+
+                                    if($resultAkun->num_rows > 0) {
+                                        $user = $resultAkun->fetch_assoc();
+                                        $photoAkun = $user['photoProfile'];
+                                        $usernameAkun = $user['username'];
+                                        $emailAkun = $user['email'];
+                                        $statusAkun = $user['status'];
+                                        while($row = $resultAkun->fetch_assoc()){
+                                            ?>
+                                            <td><img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="40" height="40"></td>
+                                            <td><?php echo htmlspecialchars($usernameAkun); ?></td>
+                                            <td><?php echo htmlspecialchars($emailAkun); ?></td>
+
+                                                <?php
+                                            if($statusAkun == 'VERIFIED'){
+                                                ?>
+                                                <td><span class = "badge bg-success"><?php echo htmlspecialchars($statusAkun); ?></span></td>
+                                                <?php
+                                            } elseif ($statusAkun == 'NOT VERIFIED'){
+                                                ?>
+                                                <td><span class = "badge bg-danger"><?php echo htmlspecialchars($statusAkun); ?></span></td>
+                                                <?php
+                                            }
+                                                ?>
+                                            <td>
+
+                                        </td>
+
+                                            <?php
+                                        }
+                                    }  
+                                    ?>
+                            </tbody>
+                        </table>
+                        <?php
+                    }
+                        ?>
+                    
+                </div>
 
                     <?php
                     //untuk data personal 
@@ -301,81 +382,81 @@ if ($isLoggedIn) {
 
                     <!-- Header -->
                     <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Dashboard</h4>
+                        <h4>Data Personal</h4>
                     </div>
 
                     <!-- Stats Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>54</h5>
-                                <p>Customers</p>
+                    <div class="container mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <button class="btn btn-outline-primary active" id="btn-members">Users</button>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>79</h5>
-                                <p>Projects</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>124</h5>
-                                <p>Orders</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded income">
-                                <h5>$6K</h5>
-                                <p>Income</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Recent Projects -->
-                    <div class="mb-4">
-                        <h5>Recent Projects</h5>
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-bordered align-middle" id="members-table">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Project Title</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Gender</th>
+                                    <th>Handphone Number</th>
+                                    <th>Home Address</th>
+                                    <th>NIK</th>
+                                    <th>KTP Image</th>
+                                    <th>Selfie with KTP</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>UI/UX Design</td>
-                                    <td>UI Team</td>
-                                    <td class="text-info">Review</td>
-                                </tr>
-                                <tr>
-                                    <td>Web Development</td>
-                                    <td>Frontend</td>
-                                    <td class="text-success">In Progress</td>
-                                </tr>
-                                <tr>
-                                    <td>Ushop App</td>
-                                    <td>Mobile Team</td>
-                                    <td class="text-danger">Pending</td>
-                                </tr>
+                                <?php 
+                                    $queryAkun1 = "SELECT username FROM akun WHERE adminId = ?";
+                                    $stmtAkun1 = $conn->prepare($queryAkun1);
+                                    $stmtAkun1->bind_param('i', $userId);
+                                    $stmtAkun1->execute();
+                                    $resultAkun1 = $stmtAkun1->get_result();
+
+                                    $queryPersonal = "SELECT * FROM databio WHERE adminId = ?";
+                                    $stmtPersonal = $conn->prepare($queryPersonal);
+                                    $stmtPersonal->bind_param('i', $userId);
+                                    $stmtPersonal->execute();
+                                    $resultPersonal = $stmtPersonal->get_result();
+
+                                    if($resultAkun1->num_rows > 0) {
+                                        while ($row = $resultAkun1->fetch_assoc()) {
+                                            if($resultPersonal->num_rows > 0) {
+                                                while ($rowPersonal = $resultPersonal->fetch_assoc()) {
+                                                ?>
+                                                <hr>
+                                                    <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                                    
+                                                    <td><?php echo htmlspecialchars($rowPersonal['namaLengkap']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowPersonal['kelamin']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowPersonal['noHP']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowPersonal['alamat']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowPersonal['nik']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowPersonal['noHP']); ?></td>
+                                                    <td>
+                                                        <div class="card">
+                                                            <img src="Images/data/photoKTP/<?php echo $rowPersonal['photoKTP']; ?>" class="card-img-top image-thumbnail">
+                                                            <div class="card-body">
+                                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img-src="<?php echo $imagePath; ?>">Preview</button>
+                                                            </div>
+                                                        </div>    
+                                                    </td>
+                                                    <td>
+                                                        <div class="card">
+                                                            <img src="Images/data/selfieKTP/<?php echo $rowPersonal['photoKTPSelfie']; ?>" class="card-img-top image-thumbnail">
+                                                            <div class="card-body">
+                                                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal" data-bs-img-src="<?php echo $imagePath; ?>">Preview</button>
+                                                            </div>
+                                                        </div>    
+                                                    </td>
+                                                <?php
+                                                }
+                                            }
+                                        }
+                                    }  
+                                ?>
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- New Customers -->
-                    <div>
-                        <h5>New Customers</h5>
-                        <ul class="list-unstyled">
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                        </ul>
                     </div>
 
                     <?php

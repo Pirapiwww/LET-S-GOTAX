@@ -8,9 +8,10 @@ function previewImage(event) {
     reader.readAsDataURL(event.target.files[0]);
 }
 
-function refreshPage() {
-    location.reload();  // Segera me-refresh halaman
+function showImageModal(imagePath) {
+    // Set image source to the selected image
+    document.getElementById('modalImage').src = imagePath;
+    // Show the modal
+    var myModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    myModal.show();
 }
-
-// Function of settings(personal).php
-

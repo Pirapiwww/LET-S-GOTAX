@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f4ff;
+        }
+        .sidebar {
+            background-color: #6a5acd;
+            color: white;
+            min-height: 100vh;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            text-decoration: underline;
+        }
+        .header {
+            background-color: #6a5acd;
+            color: white;
+        }
+        .badge-active {
+            background-color: #28a745;
+        }
+        .badge-inactive {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar d-flex flex-column p-3">
+                <h4>Norsk Timeregistrering</h4>
+                <ul class="nav flex-column mt-4">
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Profile</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Users</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Control Panel</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Projects</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Tasks</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Logs</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Group Chats</a></li>
+                    <li class="nav-item mb-2"><a href="#" class="nav-link">Reports</a></li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-10">
+                <div class="header d-flex justify-content-between align-items-center p-3">
+                    <h5>Members</h5>
+                    <div class="d-flex align-items-center">
+                        <span class="me-3">Luke Asote (Admin for Associations)</span>
+                        <img src="https://via.placeholder.com/40" alt="Profile" class="rounded-circle">
+                    </div>
+                </div>
+
+                <div class="container mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <button class="btn btn-primary">Add New</button>
+                            <button class="btn btn-secondary">Import Members</button>
+                            <button class="btn btn-secondary">Export Members (Excel)</button>
+                        </div>
+                        <div>
+                            <button class="btn btn-outline-primary" id="btn-members">Users</button>
+                            <button class="btn btn-outline-secondary" id="btn-admins">Admins</button>
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered align-middle" id="members-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Photo</th>
+                                <th>Member Name</th>
+                                <th>Mobile</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Operation</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><img src="https://via.placeholder.com/40" alt="" class="rounded-circle"></td>
+                                <td>George Lindset</td>
+                                <td>+43 315 29 02</td>
+                                <td>carlsen@gmail.com</td>
+                                <td><span class="badge badge-active text-white">Active</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-secondary">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </td>
+                                <td><button class="btn btn-sm btn-primary">Login</button></td>
+                            </tr>
+                            <tr>
+                                <td><img src="https://via.placeholder.com/40" alt="" class="rounded-circle"></td>
+                                <td>Michael Campbell</td>
+                                <td>+1 756 27 32</td>
+                                <td>campbell@gmail.com</td>
+                                <td><span class="badge badge-inactive text-white">Inactive</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-secondary">Edit</button>
+                                    <button class="btn btn-sm btn-outline-danger">Delete</button>
+                                </td>
+                                <td><button class="btn btn-sm btn-primary">Login</button></td>
+                            </tr>
+                            <!-- Additional rows can be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('btn-members').addEventListener('click', function() {
+            // Logic to show users data
+            alert('Showing Users');
+        });
+
+        document.getElementById('btn-admins').addEventListener('click', function() {
+            // Logic to show admins data
+            alert('Showing Admins');
+        });
+    </script>
+</body>
+</html>
