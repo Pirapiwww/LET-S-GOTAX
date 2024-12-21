@@ -1,6 +1,6 @@
 body {
     background-color: #e8f1f2;
-    font-family: Arial, sans-serif;
+    font-family: "Figtree", sans-serif;
 }
 header {
     background-color: #e8f1f2;
@@ -24,20 +24,27 @@ header nav a {
     padding: 40px;
     text-align: center;
 }
+.hero h2 {
+    color: #FFAE00;
+}
 .card {
     border: none;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 footer {
-    background-color: #1d1d1d;
+    background-color: #09394a;
     color: #ffffff;
     text-align: center;
     padding: 20px;
     margin-top: 20px;
+    font-family: 'Cantata One', serif;
 }
 footer a {
     color: #ffffff;
     text-decoration: none;
     margin: 0 10px;
+}
+.figtree{
+    font-family: "Figtree", sans-serif;
 }
