@@ -367,10 +367,9 @@ if ($isLoggedIn) {
                                                     
                                                     <!-- Action untuk mengubah status -->
                                                     <td>
-                                                        <a href="admin.php?status=VERIFIED" class="btn btn-sm btn-primary">Verified Status</a>
-                                                        <a href="admin.php?status=NOT VERIFIED" class="btn btn-sm btn-primary">Unverified Status</a>
+                                                        <a href="admin.php?akunId=<?php echo $row['akunId']; ?>&status=VERIFIED" class="btn btn-sm btn-danger">Unverified Status</a>
+                                                        <a href="admin.php?akunId=<?php echo $row['akunId']; ?>&status=NOT VERIFIED" class="btn btn-sm btn-primary">Verified Status</a>
                                                     </td>
-
                                                     <!-- Form untuk mengubah adminId -->
                                                     <td>
                                                         <form method="POST">
@@ -397,13 +396,22 @@ if ($isLoggedIn) {
                                                 </tr>
                                                 <?php
                                                 // ** Bagian untuk change status ** (Sudah ada di kode Anda)
-                                                if (isset($_GET['status'])) {
+                                                if (isset($_GET['status']) && isset($_GET['akunId'])) {
                                                     $status = $_GET['status'];
-                                                    if ($status == 'VERIFIED' || $status == 'NOT VERIFIED') {
-                                                        $newStatus = $status;
+                                                    $akunId = $_GET['akunId'];
+                                                    
+                                                    if ($status == 'VERIFIED') {
+                                                        $newStatus = 'VERIFIED';
                                                         $updateStatusQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
                                                         $stmtStatus = $conn->prepare($updateStatusQuery);
-                                                        $stmtStatus->bind_param('si', $newStatus, $row['akunId']);
+                                                        $stmtStatus->bind_param('si', $newStatus, $akunId);
+                                                        $stmtStatus->execute();
+                                                        $stmtStatus->close();
+                                                    } elseif ($status == 'NOT VERIFIED') {
+                                                        $newStatus = 'NOT VERIFIED';
+                                                        $updateStatusQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
+                                                        $stmtStatus = $conn->prepare($updateStatusQuery);
+                                                        $stmtStatus->bind_param('si', $newStatus, $akunId);
                                                         $stmtStatus->execute();
                                                         $stmtStatus->close();
                                                     }
