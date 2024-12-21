@@ -1,6 +1,12 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
 body {
     background-color: #e8f1f2;
     font-family: "Figtree", sans-serif;
+    display: flex;
+    flex-direction: column;
 }
 header {
     background-color: #e8f1f2;
@@ -12,13 +18,21 @@ header nav a {
     color: #333;
     text-decoration: none;
 }
-.navLogo {
+.navLogo{
     height: auto;
     width: 10%;
 }
-.navLogo2 {
+.navLogo2{
     height: auto;
     width: 20%;
+}
+nav.navbar {
+    background-color: #e8f1f2;
+    font-family: "Figtree", sans-serif;
+}
+.navbar-nav .nav-link {
+    font-size: 1rem;
+    margin: 0 10px;
 }
 .hero {
     padding: 40px;
@@ -37,7 +51,7 @@ footer {
     color: #ffffff;
     text-align: center;
     padding: 20px;
-    margin-top: 20px;
+    margin-top: auto;
     font-family: 'Cantata One', serif;
 }
 footer a {
@@ -48,3 +62,18 @@ footer a {
 .figtree{
     font-family: "Figtree", sans-serif;
 }
+.btn{
+    color: #e8f1f2 !important;
+    background-color: #ff7d02 !important;
+    border-color: #ff7d02 !important;
+}
+.btn:hover{
+    color: #e8f1f2 !important;
+    background-color: lightgray !important;
+    border-color: lightgray !important;
+}
+.alignLeft{
+    text-align: left;
+}
+
+
