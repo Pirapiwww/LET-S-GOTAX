@@ -167,11 +167,14 @@ CREATE TABLE `pembayaran` (
 --
 
 CREATE TABLE `point` (
-  `pointId` int(11) NOT NULL,
+  `pointId` int(11) NOT NULL AUTO_INCREMENT,
   `akunId` int(11) NOT NULL,
-  `totalPoint` mediumint(11) NOT NULL,
-  `lastUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `totalPoint` int(11) NOT NULL DEFAULT 0,
+  `lastUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`pointId`),
+  KEY `akunId` (`akunId`),
+  FOREIGN KEY (`akunId`) REFERENCES `akun`(`akunId`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -180,14 +183,17 @@ CREATE TABLE `point` (
 --
 
 CREATE TABLE `point_history` (
-  `historyId` int(11) NOT NULL,
+  `historyId` int(11) NOT NULL AUTO_INCREMENT,
   `akunId` int(11) NOT NULL,
   `pointAmount` int(11) NOT NULL,
-  `type` enum('earn','redeem','','') NOT NULL,
+  `type` enum('earn','redeem') NOT NULL,
   `description` varchar(255) NOT NULL,
   `transactionDate` timestamp NOT NULL DEFAULT current_timestamp(),
-  `reference_id` varchar(50) NOT NULL COMMENT 'ID referensi ke pembayaran atau voucher'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `reference_id` varchar(50) DEFAULT NULL COMMENT 'ID referensi ke pembayaran atau voucher',
+  PRIMARY KEY (`historyId`),
+  KEY `akunId` (`akunId`),
+  FOREIGN KEY (`akunId`) REFERENCES `akun`(`akunId`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -243,19 +249,23 @@ INSERT INTO `tax` (`taxId`, `adminId`, `namaLengkap`, `platKendaraan`, `jenisKen
 --
 
 CREATE TABLE `vouchers` (
-  `voucherId` int(11) NOT NULL,
-  `adminId` int(11) NOT NULL,
-  `shopName` varchar(100) NOT NULL,
-  `shopLogo` varchar(255) NOT NULL,
-  `voucherValue` int(11) NOT NULL,
+  `voucherId` int(11) NOT NULL AUTO_INCREMENT,
+  `voucherName` varchar(100) NOT NULL,
+  `startDate` date NOT NULL,
+  `endDate` date NOT NULL,
   `pointCost` int(11) NOT NULL,
-  `description` varchar(255) NOT NULL,
-  `maxStock` int(11) NOT NULL,
-  `soldCount` int(11) DEFAULT 0,
-  `isActive` tinyint(1) DEFAULT 1,
-  `expiryDate` date NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `stock` int(11) NOT NULL,
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`voucherId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `vouchers`
+--
+
+INSERT INTO `vouchers` (`voucherName`, `startDate`, `endDate`, `pointCost`, `stock`, `status`) VALUES
+('thisisapril 20% discount voucher', '2024-12-23', '2025-11-01', 67, 10, 'active');
 
 -- --------------------------------------------------------
 
@@ -264,14 +274,19 @@ CREATE TABLE `vouchers` (
 --
 
 CREATE TABLE `voucher_redemptions` (
-  `redemptionId` int(11) NOT NULL,
+  `redemptionId` int(11) NOT NULL AUTO_INCREMENT,
   `voucherId` int(11) NOT NULL,
   `akunId` int(11) NOT NULL,
-  `redemptionCode` varchar(20) NOT NULL,
+  `redemptionCode` varchar(50) NOT NULL,
   `redemptionDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `status` enum('ACTIVE','USED','EXPIRED') NOT NULL DEFAULT 'ACTIVE',
   `expiryDate` date NOT NULL,
-  `status` enum('ACTIVE','USED','EXPIRED') DEFAULT 'ACTIVE'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  PRIMARY KEY (`redemptionId`),
+  KEY `voucherId` (`voucherId`),
+  KEY `akunId` (`akunId`),
+  FOREIGN KEY (`voucherId`) REFERENCES `vouchers`(`voucherId`) ON DELETE CASCADE,
+  FOREIGN KEY (`akunId`) REFERENCES `akun`(`akunId`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Indexes for dumped tables

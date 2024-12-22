@@ -10,10 +10,14 @@
     $userPhoto = '';
     $username = '';
     $status = '';
+    $totalPoints = 0;
+
 
     if ($isLoggedIn) {
         $userId = $_SESSION['user_id'];
-        $query = "SELECT photoProfile, username,status FROM akun WHERE akunId = ?";
+
+        // Query untuk data user
+        $query = "SELECT photoProfile, username, status FROM akun WHERE akunId = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('i', $userId);
         $stmt->execute();
@@ -26,6 +30,37 @@
             $status = $user['status'];
         }
         $stmt->close();
+
+        // Query untuk mendapatkan total point user
+        $pointQuery = "SELECT totalPoint FROM point WHERE akunId = ?";
+        $pointStmt = $conn->prepare($pointQuery);
+        $pointStmt->bind_param('i', $userId);
+        $pointStmt->execute();
+        $pointResult = $pointStmt->get_result();
+
+        if ($pointResult->num_rows > 0) {
+            $pointData = $pointResult->fetch_assoc();
+            $totalPoints = $pointData['totalPoint'];
+        }
+        $pointStmt->close();
+
+        // Query untuk riwayat point
+        $historyQuery = "SELECT * FROM point_history WHERE akunId = ? ORDER BY transactionDate DESC";
+        $historyStmt = $conn->prepare($historyQuery);
+        $historyStmt->bind_param('i', $userId);
+        $historyStmt->execute();
+        $historyResult = $historyStmt->get_result();
+
+        // Query untuk voucher yang tersedia
+        $voucherQuery = "SELECT v.*, 
+                           (v.maxStock - v.soldCount) as stockLeft,
+                           ROUND((v.soldCount / v.maxStock) * 100) as soldPercentage
+                    FROM vouchers v 
+                    WHERE v.isActive = 1 
+                    AND v.expiryDate >= CURRENT_DATE
+                    AND (v.maxStock - v.soldCount) > 0
+                    ORDER BY v.created_at DESC";
+        $voucherResult = $conn->query($voucherQuery);
     }
 ?>
 
@@ -127,169 +162,139 @@
 
     <!-- Main Content -->
     <div class="container mt-5 pt-4">
-        <!-- Point Display -->
-        <div class="card point-card mb-4">
+        <!-- Point Summary Card -->
+        <div class="card mb-4">
             <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <img src="images/coin.png" alt="Coin" width="30" class="me-2">
-                    <div>
-                        <h3 class="mb-0">10</h3>
-                        <small class="text-muted">Points will expire on 20-01-2025</small>
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h4>Your Points</h4>
+                        <h2 class="text-warning"><?php echo number_format($totalPoints); ?> Points</h2>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-0 text-muted">Last updated: <?php echo date('d M Y H:i'); ?></p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Tabs -->
-        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button">
-                    Tax History
-                </button>
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#history">Point History</a>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="redeem-tab" data-bs-toggle="tab" data-bs-target="#redeem" type="button">
-                    Redeem Point
-                </button>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#redeem">Redeem Point</a>
             </li>
         </ul>
 
         <!-- Tab Content -->
-        <div class="tab-content" id="myTabContent">
-            <!-- Tax History Tab -->
-            <div class="tab-pane fade show active" id="history" role="tabpanel">
-                <div class="card history-card mb-3">
+        <div class="tab-content">
+            <!-- History Tab -->
+            <div class="tab-pane fade show active" id="history">
+                <div class="card">
                     <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <img src="images/coin.png" alt="Coin" width="24" class="me-3">
-                                <div>
-                                    <div>You have paid taxes on time</div>
-                                    <small class="text-muted">25-12-2024</small>
+                        <?php if ($historyResult->num_rows > 0): ?>
+                            <?php while ($history = $historyResult->fetch_assoc()): ?>
+                                <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                                    <div>
+                                        <h6 class="mb-1"><?php echo htmlspecialchars($history['description']); ?></h6>
+                                        <small class="text-muted">
+                                            <?php echo date('d M Y H:i', strtotime($history['transactionDate'])); ?>
+                                        </small>
+                                    </div>
+                                    <div class="<?php echo $history['type'] == 'EARN' ? 'text-success' : 'text-danger'; ?>">
+                                        <?php echo $history['type'] == 'EARN' ? '+' : '-'; ?>
+                                        <?php echo number_format($history['pointAmount']); ?> Points
+                                    </div>
                                 </div>
-                            </div>
-                            <span class="text-success">+10</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card history-card mb-3">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <img src="images/coin.png" alt="Coin" width="24" class="me-3">
-                                <div>
-                                    <div>20,000 minimarket voucher exchange</div>
-                                    <small class="text-muted">23-12-2024</small>
-                                </div>
-                            </div>
-                            <span class="text-danger">-100</span>
-                        </div>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <p class="text-center text-muted">No point history available</p>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
 
-            <!-- Redeem Point Tab -->
-            <div class="tab-pane fade" id="redeem" role="tabpanel">
+            <!-- Redeem Tab -->
+            <div class="tab-pane fade" id="redeem">
                 <div class="row g-4">
-                    <!-- Voucher Card 1 -->
-                    <div class="col-md-4">
-                        <div class="card voucher-card">
-                            <div class="card-body p-0">
-                                <!-- Voucher Image -->
-                                <div class="voucher-image position-relative">
-                                    <img src="images/voucher.jpg" alt="Voucher" class="w-100" style="background-color: #FF6B00; border-radius: 10px 10px 0 0;">
-                                    <div class="position-absolute top-50 start-0 translate-middle-y text-white ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <img src="images/voucher.jpg" alt="Hody" class="me-2" style="width: 40px; height: 40px; background: white; border-radius: 5px;">
-                                            <div>
-                                                <h6 class="mb-0">VOUCHER</h6>
-                                                <h4 class="mb-0">Rp10.000</h4>
+                    <?php if ($voucherResult->num_rows > 0): ?>
+                        <?php while ($voucher = $voucherResult->fetch_assoc()): ?>
+                            <div class="col-md-4">
+                                <div class="card voucher-card">
+                                    <div class="card-body p-0">
+                                        <div class="voucher-image position-relative">
+                                            <img src="images/voucher-bg.png" alt="Voucher" class="w-100">
+                                            <div class="position-absolute top-50 start-0 translate-middle-y text-white ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <img src="Images/shops/<?php echo htmlspecialchars($voucher['shopLogo']); ?>" 
+                                                         alt="<?php echo htmlspecialchars($voucher['shopName']); ?>" 
+                                                         class="me-2" style="width: 40px; height: 40px;">
+                                                    <div>
+                                                        <h6 class="mb-0">VOUCHER</h6>
+                                                        <h4 class="mb-0">Rp<?php echo number_format($voucher['voucherValue']); ?></h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="p-3">
+                                            <h6 class="mb-2"><?php echo htmlspecialchars($voucher['description']); ?></h6>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <small class="text-muted"><?php echo $voucher['soldPercentage']; ?>% TERJUAL</small>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="images/coin.png" alt="Point" width="20" height="20" class="me-1">
+                                                    <span class="fw-bold text-warning me-2">
+                                                        <?php echo number_format($voucher['pointCost']); ?>
+                                                    </span>
+                                                    <button class="btn btn-danger btn-sm px-3" 
+                                                            onclick="redeemVoucher(<?php echo $voucher['voucherId']; ?>, <?php echo $voucher['pointCost']; ?>)"
+                                                            <?php echo ($totalPoints < $voucher['pointCost']) ? 'disabled' : ''; ?>>
+                                                        BELI
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Voucher Details -->
-                                <div class="p-3">
-                                    <h6 class="mb-2">Voucher 10RB Hody Official Shop</h6>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">0.0% TERJUAL</small>
-                                        <div class="d-flex align-items-center">
-                                            <img src="images/coin.png" alt="Coin" width="20" height="20" class="me-1">
-                                            <span class="fw-bold text-warning me-2">1.000</span>
-                                            <button class="btn btn-danger btn-sm px-3">BELI</button>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="col-12">
+                            <p class="text-center text-muted">No vouchers available at the moment</p>
                         </div>
-                    </div>
-
-                    <!-- Voucher Card 2 -->
-                    <div class="col-md-4">
-                        <div class="card voucher-card">
-                            <div class="card-body p-0">
-                                <div class="voucher-image position-relative">
-                                    <img src="images/voucher.jpg" alt="Voucher" class="w-100" style="background-color: #FF6B00; border-radius: 10px 10px 0 0;">
-                                    <div class="position-absolute top-50 start-0 translate-middle-y text-white ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <img src="images/voucher.jpg" alt="Basike" class="me-2" style="width: 40px; height: 40px; background: white; border-radius: 5px;">
-                                            <div>
-                                                <h6 class="mb-0">VOUCHER</h6>
-                                                <h4 class="mb-0">Rp10.000</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-3">
-                                    <h6 class="mb-2">Voucher 10RB Basike Official Shop</h6>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">0.0% TERJUAL</small>
-                                        <div class="d-flex align-items-center">
-                                            <img src="images/coin.png" alt="Coin" width="20" height="20" class="me-1">
-                                            <span class="fw-bold text-warning me-2">1.000</span>
-                                            <button class="btn btn-danger btn-sm px-3">BELI</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Voucher Card 3 -->
-                    <div class="col-md-4">
-                        <div class="card voucher-card">
-                            <div class="card-body p-0">
-                                <div class="voucher-image position-relative">
-                                    <img src="images/voucher.jpg" alt="Voucher" class="w-100" style="background-color: #FF6B00; border-radius: 10px 10px 0 0;">
-                                    <div class="position-absolute top-50 start-0 translate-middle-y text-white ps-4">
-                                        <div class="d-flex align-items-center">
-                                            <img src="images/voucher.jpg" alt="Nobrand" class="me-2" style="width: 40px; height: 40px; background: white; border-radius: 5px;">
-                                            <div>
-                                                <h6 class="mb-0">VOUCHER</h6>
-                                                <h4 class="mb-0">Rp15.000</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="p-3">
-                                    <h6 class="mb-2">Voucher 15RB nobrandspeedshop</h6>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">0.0% TERJUAL</small>
-                                        <div class="d-flex align-items-center">
-                                            <img src="images/coin.png" alt="Coin" width="20" height="20" class="me-1">
-                                            <span class="fw-bold text-warning me-2">1.500</span>
-                                            <button class="btn btn-danger btn-sm px-3">BELI</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- JavaScript untuk redeem voucher -->
+    <script>
+    function redeemVoucher(voucherId, pointCost) {
+        if (confirm(`Are you sure you want to redeem this voucher for ${pointCost} points?`)) {
+            fetch('process_voucher.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=redeem&voucherId=${voucherId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Voucher redeemed successfully!');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Failed to redeem voucher');
+                }
+            })
+            .catch(error => {
+                alert('An error occurred');
+                console.error('Error:', error);
+            });
+        }
+    }
+    </script>
 
     <!-- Footer -->
     <footer class="py-4 bg3 text-white mt-auto">
