@@ -116,7 +116,7 @@ if ($isLoggedIn) {
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Inisialisasi user ID
-        $userId = $_SESSION['user_id'];
+        $userId = $_SESSION['admin_id'];
 
         // Memproses perubahan adminId untuk setiap akun
         foreach ($_POST as $key => $value) {
@@ -185,28 +185,53 @@ if ($isLoggedIn) {
             $lastPay = $_POST['lastPay'] ?? null;
             $nextPay = $_POST['nextPay'] ?? null;
             $jenisKendaraan = $_POST['jenisKendaraan'] ?? null;
-
-            // Cek apakah email atau username sudah terdaftar
-            $sql_check = "SELECT * FROM tax";
+        
+            // Validasi input
+            if (empty($plat) || empty($namaTax)) {
+                echo "Plat Kendaraan dan Nama Pajak wajib diisi!";
+                exit;
+            }
+        
+            // Periksa apakah data pajak dengan plat kendaraan yang sama sudah ada
+            $sql_check = "SELECT * FROM tax WHERE platKendaraan = ?";
             $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bind_param("s", $plat);
             $stmt_check->execute();
             $result_check = $stmt_check->get_result();
         
             if ($result_check->num_rows > 0) {
-                // Jika email atau username sudah terdaftar
-                $error = "Data tax sudah terdaftar!";
+                // Jika data pajak dengan plat kendaraan yang sama sudah ada
+                echo "Data tax dengan plat kendaraan ini sudah terdaftar!";
             } else {
-                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, jenisKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                // Masukkan data baru ke tabel tax
+                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, nextPay, jenisKendaraan) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
-                $stmt_insert->bind_param("sssssssss", $userId, $namaTax, $plat, $totalTax, $lastPay, $statusPajak, $dendaPajak, $nextPay, $jenisKendaraan);
-                $stmt_insert->execute();
-                
-                $stmt_insert->close();
+                if ($stmt_insert) {
+                    $stmt_insert->bind_param(
+                        "issssssss", 
+                        $userId, 
+                        $namaTax, 
+                        $plat, 
+                        $totalTax, 
+                        $lastPay, 
+                        $statusPajak, 
+                        $dendaPajak, 
+                        $nextPay, 
+                        $jenisKendaraan
+                    );
+                    $stmt_insert->execute();
+                    echo "Data tax berhasil ditambahkan!";
+                    $stmt_insert->close();
+                } else {
+                    echo "Gagal menyiapkan query insert: " . $conn->error;
+                }
             }
         
             // Menutup statement cek setelah selesai
             $stmt_check->close();
         }
+        
         
 
         // ** Bagian untuk Update Foto Profil **
@@ -1010,7 +1035,10 @@ if ($isLoggedIn) {
                     <?php
                 } elseif ($page == 'point') {
                     ?>
-
+                    <!-- Header -->
+                    <div class="header d-flex justify-content-between align-items-center mb-4">
+                        <h4>Point</h4>
+                    </div>
                     <!-- Tabs -->
                     <ul class="nav nav-tabs mb-4" role="tablist">
                         <li class="nav-item">
@@ -1049,10 +1077,10 @@ if ($isLoggedIn) {
                                     <tbody>
                                         <?php
                                         $query = "SELECT p.*, a.username, ph.type, ph.transactionDate 
-                                                 FROM point p 
-                                                 JOIN akun a ON p.akunId = a.akunId
-                                                 LEFT JOIN point_history ph ON p.akunId = ph.akunId
-                                                 ORDER BY ph.transactionDate DESC";
+                                                FROM point p 
+                                                JOIN akun a ON p.akunId = a.akunId
+                                                LEFT JOIN point_history ph ON p.akunId = ph.akunId
+                                                ORDER BY ph.transactionDate DESC";
                                         $result = $conn->query($query);
                                         $no = 1;
                                         
