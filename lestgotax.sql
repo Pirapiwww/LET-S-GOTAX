@@ -114,14 +114,14 @@ INSERT INTO `databio` (`databioId`, `akunId`, `adminId`, `namaLengkap`, `alamat`
 --
 
 CREATE TABLE `kendaraan` (
-  `id_kendaraan` varchar(50) NOT NULL,
-  `No_Rangka` varchar(50) NOT NULL,
-  `No_Mesin` varchar(50) NOT NULL,
-  `No_Plat` varchar(20) NOT NULL,
+  `id_kendaraan` int(11) NOT NULL,
+  `No_Rangka` varchar(255) NOT NULL,
+  `No_Mesin` varchar(255) NOT NULL,
+  `No_Plat` varchar(255) NOT NULL,
   `akunId` int(11) NOT NULL,
   `namaPemilik` varchar(255) NOT NULL,
   `statusPilih` enum('SELECTED','UNSELECTED') NOT NULL,
-  `jenisKendaraan` enum('PRIBADI','PRIBADI LAIN','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL
+  `jenisKendaraan` enum('PRIBADI','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -149,13 +149,13 @@ CREATE TABLE `notif` (
 --
 
 CREATE TABLE `pembayaran` (
-  `id_pembayaran` varchar(50) NOT NULL,
+  `id_pembayaran` int(11) NOT NULL,
   `Bukti_Pembayaran` varchar(255) DEFAULT NULL,
-  `No_Tagihan` varchar(50) NOT NULL,
+  `No_Tagihan` varchar(255) NOT NULL,
   `Tanggal_Bayar` date NOT NULL,
-  `Metode_Pembayaran` varchar(50) NOT NULL,
-  `id_kendaraan` varchar(50) DEFAULT NULL,
-  `id_Status_Pembayaran` varchar(50) DEFAULT NULL,
+  `Metode_Pembayaran` varchar(255) NOT NULL,
+  `id_kendaraan` varchar(255) DEFAULT NULL,
+  `id_Status_Pembayaran` varchar(255) DEFAULT NULL,
   `status` enum('PENDING','PROCESSED','COMPLETED','FAILED') NOT NULL DEFAULT 'PENDING',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
