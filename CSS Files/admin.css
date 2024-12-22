@@ -122,7 +122,7 @@ select {
 }
 .custom-badge {
     background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
-    color: white; /* Menjaga teks tetap putih */
+    color: white !important; /* Menjaga teks tetap putih */
 }
 
 
