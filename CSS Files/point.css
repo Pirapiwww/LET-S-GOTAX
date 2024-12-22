@@ -1,43 +1,110 @@
 body {
-    font-family: 'Cantata One', serif;
-    font-size: 20px;
+    font-family: 'Figtree', sans-serif;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
+
+.navbar {
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 .navLogo {
-    height: auto;
-    width: 10%;
+    height: 40px;
 }
+
 .navLogo2 {
-    height: auto;
-    width: 20%;
+    height: 20px;
+    margin-left: 10px;
 }
-nav.navbar {
-    background-color: #e8f1f2;
-    font-family: "Figtree", sans-serif;
+
+.point-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: none;
 }
-.btn{
-    color: #e8f1f2 !important;
-    background-color: #ff7d02 !important;
-    border-color: #ff7d02 !important;
+
+.nav-tabs {
+    border: none;
+    background-color: #FFC107;
+    border-radius: 5px;
+    padding: 5px;
 }
-.btn:hover{
-    color: #e8f1f2 !important;
-    background-color: lightgray !important;
-    border-color: lightgray !important;
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #000;
+    border-radius: 5px;
+    padding: 8px 20px;
+    margin: 0 5px;
 }
-.cantarell{
-    font-family: "Cantarell", sans-serif;
+
+.nav-tabs .nav-link.active {
+    background-color: white;
+    color: #000;
+    font-weight: 500;
 }
-.figtree{
-    font-family: "Figtree", sans-serif;
+
+.history-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-nav.navbar {
-    background-color: #e8f1f2;
-    font-family: "Figtree", sans-serif;
+
+.voucher-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    overflow: hidden;
 }
-.spanCustom{
-    padding-left: 10px;
+
+.voucher-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-.custom-badge {
-    background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
-    color: white; /* Menjaga teks tetap putih */
+
+.progress {
+    height: 8px;
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background-color: #FFC107;
+}
+
+.bg3 {
+    background-color: #09394a;
+}
+
+.footer img {
+    transition: transform 0.2s;
+}
+
+.footer img:hover {
+    transform: scale(1.1);
+}
+
+.btn-danger {
+    background-color: #FF6B6B;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #FF5252;
+}
+
+.text-warning {
+    color: #FFC107 !important;
+}
+
+footer {
+    font-family: 'Cantata One', serif;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px;
+    margin-top: auto;
 }

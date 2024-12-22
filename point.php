@@ -34,17 +34,23 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <link href="CSS Files/point.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Cantarell:ital,wght@0,400;0,700;1,400;1,700&family=Cantata+One&family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+        
+        <!-- Bootstrap 5.3.3 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" 
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Cantata+One&display=swap" rel="stylesheet">
+        
         <title>LET'S GOTAX</title>
-        <link rel="icon" type="images/x-icon" href="images/let's gotax(logo).png">
-
+        <link rel="icon" type="image/x-icon" href="images/let's gotax(logo).png">
+        
+        <link rel="stylesheet" href="CSS Files/point.css">
     </head>
     <body>
-        <!-- Navigation Bar -->
-        <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+                <!-- Navigation Bar -->
+                <nav class="navbar navbar-expand-lg navbar-light fixed-top">
             <div class="container">
                 <!-- Logo di kiri -->
                 <a class="navbar-brand me-auto" href="home.php">
@@ -54,11 +60,10 @@
 
                 <!-- Login / Profil di kanan -->
                 <div class="ms-auto">
-                    <?php if ($isLoggedIn) { ?>
-                        <div class="dropdown">
+                    <div class="dropdown">
                             <a class="btn btn-light rounded-circle p-0" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                                 <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="40" height="40">
-                            </a>                        
+                            </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuLink">
                                 <li class="dropdown-item text-center">
                                     <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" class="rounded-circle mb-2" width="80" height="80">
@@ -114,10 +119,192 @@
                                 </a></li>
                             </ul>
                         </div>
-                    <?php } ?>
                 </div>
             </div>
         </nav>
-    
+
+    <!-- Main Content -->
+    <div class="container mt-5 pt-4">
+        <!-- Point Display -->
+        <div class="card point-card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <img src="images/coin.png" alt="Coin" width="30" class="me-2">
+                    <div>
+                        <h3 class="mb-0">10</h3>
+                        <small class="text-muted">Points will expire on 20-01-2025</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button">
+                    Tax History
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="redeem-tab" data-bs-toggle="tab" data-bs-target="#redeem" type="button">
+                    Redeem Point
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="myTabContent">
+            <!-- Tax History Tab -->
+            <div class="tab-pane fade show active" id="history" role="tabpanel">
+                <div class="card history-card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="images/coin.png" alt="Coin" width="24" class="me-3">
+                                <div>
+                                    <div>You have paid taxes on time</div>
+                                    <small class="text-muted">25-12-2024</small>
+                                </div>
+                            </div>
+                            <span class="text-success">+10</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card history-card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="images/coin.png" alt="Coin" width="24" class="me-3">
+                                <div>
+                                    <div>20,000 minimarket voucher exchange</div>
+                                    <small class="text-muted">23-12-2024</small>
+                                </div>
+                            </div>
+                            <span class="text-danger">-100</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Redeem Point Tab -->
+            <div class="tab-pane fade" id="redeem" role="tabpanel">
+                <div class="row g-4">
+                    <!-- Voucher Card 1 -->
+                    <div class="col-md-4">
+                        <div class="card voucher-card">
+                            <div class="card-body p-0">
+                                <!-- Voucher Image -->
+                                <div class="voucher-image position-relative">
+                                    <img src="images/voucher.jpg" alt="Voucher" class="w-100" style="background-color: #FF6B00; border-radius: 10px 10px 0 0;">
+                                    <div class="position-absolute top-50 start-0 translate-middle-y text-white ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <img src="images/voucher.jpg" alt="Hody" class="me-2" style="width: 40px; height: 40px; background: white; border-radius: 5px;">
+                                            <div>
+                                                <h6 class="mb-0">VOUCHER</h6>
+                                                <h4 class="mb-0">Rp10.000</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Voucher Details -->
+                                <div class="p-3">
+                                    <h6 class="mb-2">Voucher 10RB Hody Official Shop</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">0.0% TERJUAL</small>
+                                        <div class="d-flex align-items-center">
+                                            <img src="images/coin.png" alt="Coin" width="20" height="20" class="me-1">
+                                            <span class="fw-bold text-warning me-2">1.000</span>
+                                            <button class="btn btn-danger btn-sm px-3">BELI</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Voucher Card 2 -->
+                    <div class="col-md-4">
+                        <div class="card voucher-card">
+                            <div class="card-body p-0">
+                                <div class="voucher-image position-relative">
+                                    <img src="images/voucher.jpg" alt="Voucher" class="w-100" style="background-color: #FF6B00; border-radius: 10px 10px 0 0;">
+                                    <div class="position-absolute top-50 start-0 translate-middle-y text-white ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <img src="images/voucher.jpg" alt="Basike" class="me-2" style="width: 40px; height: 40px; background: white; border-radius: 5px;">
+                                            <div>
+                                                <h6 class="mb-0">VOUCHER</h6>
+                                                <h4 class="mb-0">Rp10.000</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <h6 class="mb-2">Voucher 10RB Basike Official Shop</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">0.0% TERJUAL</small>
+                                        <div class="d-flex align-items-center">
+                                            <img src="images/coin.png" alt="Coin" width="20" height="20" class="me-1">
+                                            <span class="fw-bold text-warning me-2">1.000</span>
+                                            <button class="btn btn-danger btn-sm px-3">BELI</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Voucher Card 3 -->
+                    <div class="col-md-4">
+                        <div class="card voucher-card">
+                            <div class="card-body p-0">
+                                <div class="voucher-image position-relative">
+                                    <img src="images/voucher.jpg" alt="Voucher" class="w-100" style="background-color: #FF6B00; border-radius: 10px 10px 0 0;">
+                                    <div class="position-absolute top-50 start-0 translate-middle-y text-white ps-4">
+                                        <div class="d-flex align-items-center">
+                                            <img src="images/voucher.jpg" alt="Nobrand" class="me-2" style="width: 40px; height: 40px; background: white; border-radius: 5px;">
+                                            <div>
+                                                <h6 class="mb-0">VOUCHER</h6>
+                                                <h4 class="mb-0">Rp15.000</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-3">
+                                    <h6 class="mb-2">Voucher 15RB nobrandspeedshop</h6>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">0.0% TERJUAL</small>
+                                        <div class="d-flex align-items-center">
+                                            <img src="images/coin.png" alt="Coin" width="20" height="20" class="me-1">
+                                            <span class="fw-bold text-warning me-2">1.500</span>
+                                            <button class="btn btn-danger btn-sm px-3">BELI</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-4 bg3 text-white mt-auto">
+        <div class="container text-center">
+            <h3 class="mb-2 text-warning" style="font-family: 'Cantata One', serif;">LET'S GOTAX</h3>
+            <p class="small" style="font-family: 'Cantata One', serif;">Simplify Your Tax Journey, Anytime, Anywhere!</p>
+            <div class="mb-3">
+                <span><img src="Images/Home/gmail.png" width="70"></span>
+                <span><img src="Images/Home/facebook.png" width="70"></span>
+                <span><img src="Images/Home/instagram.png" width="70"></span>
+            </div>
+            <p class="mb-0" style="font-family: 'Cantata One', serif;">&copy; 2024 UNITY (LET'S GOTAX). All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     </body>
 </html>
