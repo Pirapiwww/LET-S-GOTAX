@@ -460,7 +460,7 @@
                                                         default:
                                                             echo 'UNKNOWN VEHICLE TYPE';
                                                             break;
-                                                    }
+                                                        }
                                                     ?>
                                                 </h6>
                                                 <?php
