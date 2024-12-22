@@ -14,7 +14,7 @@ session_start();
 include 'config.php';
 
 // Periksa apakah pengguna sudah login
-$isLoggedIn = isset($_SESSION['user_id']);
+$isLoggedIn = isset($_SESSION['admin_id']);
 
 //column tabel Admin
 $userPhoto = '';
