@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 22, 2024 at 02:13 PM
+-- Generation Time: Dec 22, 2024 at 05:18 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -169,13 +169,24 @@ CREATE TABLE `pembayaran` (
 CREATE TABLE `point` (
   `pointId` int(11) NOT NULL,
   `akunId` int(11) NOT NULL,
-  `adminId` int(11) NOT NULL,
   `totalPoint` mediumint(11) NOT NULL,
-  `tgl_perolehan` date DEFAULT NULL,
-  `keterangan_poin` text DEFAULT NULL,
-  `status_poin` varchar(20) DEFAULT NULL,
-  `tgl_kadaluarsa` date DEFAULT NULL,
-  `minimum_transaksi` decimal(10,2) DEFAULT NULL
+  `lastUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `point_history`
+--
+
+CREATE TABLE `point_history` (
+  `historyId` int(11) NOT NULL,
+  `akunId` int(11) NOT NULL,
+  `pointAmount` int(11) NOT NULL,
+  `type` enum('earn','redeem','','') NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `transactionDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `reference_id` varchar(50) NOT NULL COMMENT 'ID referensi ke pembayaran atau voucher'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -224,6 +235,43 @@ CREATE TABLE `tax` (
 
 INSERT INTO `tax` (`taxId`, `adminId`, `namaLengkap`, `platKendaraan`, `jenisKendaraan`, `totalPajak`, `lastPay`, `status`, `dendaPajak`, `nextPay`) VALUES
 (1, 1, 'Aliya Hanifa', 'AB 2103 WS', 'PRIBADI', 'Rp. 254.000,-', '24-12-2023', 'ON TIME', 'Rp. 0,-', '24-12-2024');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vouchers`
+--
+
+CREATE TABLE `vouchers` (
+  `voucherId` int(11) NOT NULL,
+  `adminId` int(11) NOT NULL,
+  `shopName` varchar(100) NOT NULL,
+  `shopLogo` varchar(255) NOT NULL,
+  `voucherValue` int(11) NOT NULL,
+  `pointCost` int(11) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `maxStock` int(11) NOT NULL,
+  `soldCount` int(11) DEFAULT 0,
+  `isActive` tinyint(1) DEFAULT 1,
+  `expiryDate` date NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `voucher_redemptions`
+--
+
+CREATE TABLE `voucher_redemptions` (
+  `redemptionId` int(11) NOT NULL,
+  `voucherId` int(11) NOT NULL,
+  `akunId` int(11) NOT NULL,
+  `redemptionCode` varchar(20) NOT NULL,
+  `redemptionDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `expiryDate` date NOT NULL,
+  `status` enum('ACTIVE','USED','EXPIRED') DEFAULT 'ACTIVE'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for dumped tables
@@ -293,8 +341,14 @@ ALTER TABLE `pembayaran`
 --
 ALTER TABLE `point`
   ADD PRIMARY KEY (`pointId`),
-  ADD UNIQUE KEY `akunId` (`akunId`),
-  ADD UNIQUE KEY `adminId` (`adminId`);
+  ADD UNIQUE KEY `akunId` (`akunId`);
+
+--
+-- Indexes for table `point_history`
+--
+ALTER TABLE `point_history`
+  ADD PRIMARY KEY (`historyId`),
+  ADD KEY `akunId` (`akunId`);
 
 --
 -- Indexes for table `status_pembayaran`
@@ -308,6 +362,21 @@ ALTER TABLE `status_pembayaran`
 ALTER TABLE `tax`
   ADD PRIMARY KEY (`taxId`),
   ADD KEY `adminId` (`adminId`);
+
+--
+-- Indexes for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD PRIMARY KEY (`voucherId`),
+  ADD KEY `adminId` (`adminId`);
+
+--
+-- Indexes for table `voucher_redemptions`
+--
+ALTER TABLE `voucher_redemptions`
+  ADD PRIMARY KEY (`redemptionId`),
+  ADD KEY `voucherId` (`voucherId`),
+  ADD KEY `akunId` (`akunId`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -350,10 +419,28 @@ ALTER TABLE `point`
   MODIFY `pointId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `point_history`
+--
+ALTER TABLE `point_history`
+  MODIFY `historyId` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `tax`
 --
 ALTER TABLE `tax`
   MODIFY `taxId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  MODIFY `voucherId` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `voucher_redemptions`
+--
+ALTER TABLE `voucher_redemptions`
+  MODIFY `redemptionId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
@@ -386,10 +473,29 @@ ALTER TABLE `pembayaran`
   ADD CONSTRAINT `pembayaran_ibfk_2` FOREIGN KEY (`id_Status_Pembayaran`) REFERENCES `status_pembayaran` (`id_Status_Pembayaran`);
 
 --
+-- Constraints for table `point_history`
+--
+ALTER TABLE `point_history`
+  ADD CONSTRAINT `akunId` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`);
+
+--
 -- Constraints for table `tax`
 --
 ALTER TABLE `tax`
   ADD CONSTRAINT `tax_ibfk_1` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
+
+--
+-- Constraints for table `vouchers`
+--
+ALTER TABLE `vouchers`
+  ADD CONSTRAINT `vouchers_ibfk_1` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
+
+--
+-- Constraints for table `voucher_redemptions`
+--
+ALTER TABLE `voucher_redemptions`
+  ADD CONSTRAINT `voucher_redemptions_ibfk_1` FOREIGN KEY (`voucherId`) REFERENCES `vouchers` (`voucherId`),
+  ADD CONSTRAINT `voucher_redemptions_ibfk_2` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
