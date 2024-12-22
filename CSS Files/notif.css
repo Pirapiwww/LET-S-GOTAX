@@ -2,17 +2,21 @@ body {
     font-family: 'Cantata One', serif;
     font-size: 20px;
 }
-.navLogo {
+.navLogo{
     height: auto;
     width: 10%;
 }
-.navLogo2 {
+.navLogo2{
     height: auto;
     width: 20%;
 }
 nav.navbar {
     background-color: #e8f1f2;
     font-family: "Figtree", sans-serif;
+}
+.navbar-nav .nav-link {
+    font-size: 1rem;
+    margin: 0 10px;
 }
 .btn{
     color: #e8f1f2 !important;
@@ -24,16 +28,7 @@ nav.navbar {
     background-color: lightgray !important;
     border-color: lightgray !important;
 }
-.cantarell{
-    font-family: "Cantarell", sans-serif;
-}
-.figtree{
-    font-family: "Figtree", sans-serif;
-}
-nav.navbar {
-    background-color: #e8f1f2;
-    font-family: "Figtree", sans-serif;
-}
-.spanCustom{
-    padding-left: 10px;
+.custom-badge {
+    background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
+    color: white; /* Menjaga teks tetap putih */
 }

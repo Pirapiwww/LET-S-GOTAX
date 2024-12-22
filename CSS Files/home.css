@@ -41,6 +41,12 @@ nav.navbar {
     border-color: lightgray !important;
 }
 
+.custom-badge {
+    background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
+    color: white; /* Menjaga teks tetap putih */
+}
+
+
 .hero-section {
     background-image: url('../Images/Home/home.png');
     height: 920px;

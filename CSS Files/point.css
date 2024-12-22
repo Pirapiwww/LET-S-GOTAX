@@ -37,3 +37,7 @@ nav.navbar {
 .spanCustom{
     padding-left: 10px;
 }
+.custom-badge {
+    background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
+    color: white; /* Menjaga teks tetap putih */
+}

@@ -9,10 +9,11 @@
     $isLoggedIn = isset($_SESSION['user_id']);
     $userPhoto = '';
     $username = '';
+    $status = '';
 
     if ($isLoggedIn) {
         $userId = $_SESSION['user_id'];
-        $query = "SELECT photoProfile, username FROM akun WHERE akunId = ?";
+        $query = "SELECT photoProfile, username,status FROM akun WHERE akunId = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('i', $userId);
         $stmt->execute();
@@ -22,6 +23,7 @@
             $user = $result->fetch_assoc();
             $userPhoto = $user['photoProfile'];
             $username = $user['username'];
+            $status = $user['status'];
         }
         $stmt->close();
     }
@@ -61,6 +63,14 @@
                                 <li class="dropdown-item text-center">
                                     <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" class="rounded-circle mb-2" width="80" height="80">
                                     <p class="mb-0 fw-bold"><?php echo htmlspecialchars($username); ?></p>
+                                    <?php
+                                        // Menampilkan status berdasarkan nilai status
+                                        if ($status == 'VERIFIED') {
+                                            echo '<span class="badge bg-success">' . htmlspecialchars($status) . '</span>';
+                                        } elseif ($status == 'NOT VERIFIED') {
+                                            echo '<span class="badge bg-danger">' . htmlspecialchars($status) . '</span>';
+                                        }
+                                    ?>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="home.php">

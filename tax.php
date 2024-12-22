@@ -1,18 +1,28 @@
 <?php
-    // Memulai sesi untuk menyimpan data pengguna
     session_start();
-
-    // Include konfigurasi database
     include 'config.php';
 
-    // Periksa apakah pengguna sudah login
+    $page = isset($_GET['page']) ? $_GET['page'] : 'home';
+
     $isLoggedIn = isset($_SESSION['user_id']);
     $userPhoto = '';
     $username = '';
+    $status= '';
+
+    // untuk tabel databio
+    $namaLengkap = '';
+    $alamat = '';
+    $alamatNow = '';
+    $nik = '';
+    $kelamin = '';
+    $noHP = '';
+    $tanggalLahir = '';
+    $selfieKTP = '';
+    $photoKTP = '';
 
     if ($isLoggedIn) {
         $userId = $_SESSION['user_id'];
-        $query = "SELECT photoProfile, username FROM akun WHERE akunId = ?";
+        $query = "SELECT photoProfile, username, status FROM akun WHERE akunId = ?";
         $stmt = $conn->prepare($query);
         $stmt->bind_param('i', $userId);
         $stmt->execute();
@@ -22,8 +32,30 @@
             $user = $result->fetch_assoc();
             $userPhoto = $user['photoProfile'];
             $username = $user['username'];
+            $status = $user['status'];
         }
         $stmt->close();
+
+        // untuk tabel databio
+        $query2 = "SELECT * FROM databio WHERE akunId = ?";
+        $stmt2 = $conn->prepare($query2);
+        $stmt2->bind_param('i', $userId);
+        $stmt2->execute();
+        $result2 = $stmt2->get_result();
+
+        if ($result2->num_rows > 0) {
+            $user2 = $result2->fetch_assoc();
+            $namaLengkap = $user2['namaLengkap'];
+            $alamat = $user2['alamat'];
+            $alamatNow = $user2['alamatNow'];
+            $nik = $user2['nik'];
+            $noHP = $user2['noHP'];
+            $tanggalLahir = $user2['tanggalLahir'];
+            $selfieKTP = $user2['photoKTPSelfie'];
+            $photoKTP = $user2['photoKTP'];
+            $kelamin = $user2['kelamin'];
+        }
+        $stmt2->close();
     }
 ?>
 
@@ -39,7 +71,6 @@
         <link href="https://fonts.googleapis.com/css2?family=Cantarell:ital,wght@0,400;0,700;1,400;1,700&family=Cantata+One&family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
         <title>LET'S GOTAX</title>
         <link rel="icon" type="images/x-icon" href="images/let's gotax(logo).png">
-
     </head>
     <body>
         <!-- Navigation Bar -->
@@ -51,33 +82,9 @@
                     <img src="images/let's gotax (logo2).png" class="navLogo2">
                 </a>
 
-                <!-- Tombol responsif -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <!-- Menu navigasi di tengah -->
-                <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" href="home.php#home">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="home.php#about">About</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#services">Services</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#contact">Contact</a>
-                        </li>
-                    </ul>
-                </div>
-
                 <!-- Login / Profil di kanan -->
                 <div class="ms-auto">
-                    <?php if ($isLoggedIn): ?>
-                        <div class="dropdown">
+                    <div class="dropdown">
                             <a class="btn btn-light rounded-circle p-0" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
                                 <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="40" height="40">
                             </a>
@@ -85,9 +92,17 @@
                                 <li class="dropdown-item text-center">
                                     <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" class="rounded-circle mb-2" width="80" height="80">
                                     <p class="mb-0 fw-bold"><?php echo htmlspecialchars($username); ?></p>
+                                    <?php
+                                        // Menampilkan status berdasarkan nilai status
+                                        if ($status == 'VERIFIED') {
+                                            echo '<span class="badge bg-success">' . htmlspecialchars($status) . '</span>';
+                                        } elseif ($status == 'NOT VERIFIED') {
+                                            echo '<span class="badge bg-danger">' . htmlspecialchars($status) . '</span>';
+                                        }
+                                    ?>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="home.php">
+                                <li><a class="dropdown-item" href="home.php">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
                                     <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
                                     </svg><span class="spanCustom"> Home</span>
@@ -124,15 +139,140 @@
                                     <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
                                     <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
                                     </svg>
-                                    <span class="spanCustom"> Log Out</span>
+                                    <span class="spanCustom">Log Out</span>
                                 </a></li>
                             </ul>
                         </div>
-                    <?php else: ?>
-                        <a href="login.php" class="btn btn-primary rounded-pill px-4 py-2">Login / Sign Up</a>
-                    <?php endif; ?>
                 </div>
             </div>
         </nav>
+
+        <!-- Main Content -->
+        <div class="container-fluid mt-5">
+            <div class="row">
+                <div class="col-md-2 sidebar py-4">
+                    <h4 class="text-white text-center mt-5">Vehicle Tax</h4>
+                    <a href="tax.php?page=home" class="<?= $page == 'home' ? 'active' : '' ?> mt-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+                        <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                        </svg>
+                        Home Page
+                    </a>
+                    <a href="tax.php?page=owner" class="<?= $page == 'owner' ? 'active' : '' ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-vcard" viewBox="0 0 16 16">
+                        <path d="M5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4m4-2.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5M9 8a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4A.5.5 0 0 1 9 8m1 2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5"/>
+                        <path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM1 4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H8.96q.04-.245.04-.5C9 10.567 7.21 9 5 9c-2.086 0-3.8 1.398-3.984 3.181A1 1 0 0 1 1 12z"/>
+                        </svg>
+                        Ownership Transfer
+                    </a>
+                    <a href="tax.php?page=pay" class="<?= $page == 'pay' ? 'active' : '' ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-credit-card" viewBox="0 0 16 16">
+                        <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z"/>
+                        <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+                        </svg>
+                        Tax Payment
+                    </a>
+                    <a href="tax.php?page=vehicle" class="<?= $page == 'vehicle' ? 'active' : '' ?>">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-car-front" viewBox="0 0 16 16">
+                        <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
+                        <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
+                        </svg>
+                        Data Vehicle
+                    </a>
+                </div>
+
+                    <?php
+                    //untuk homepage
+                if ($page == 'home') {
+                    ?>
+                    <div class="col-md-10 p-4 mt-5">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="card bg-primary text-white"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-danger text-white"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-info text-white"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php
+                    //untuk ownership transfer 
+                }elseif ($page == 'owner') {
+                    ?>
+
+                
+                    <?php
+                    //untuk tax payment
+                }elseif ($page == 'pay') {
+                    ?>
+                    <!-- Main Content -->
+                    <main class="col-md-10 ms-sm-auto px-md-4">
+                        <div class="py-4">
+                            <!-- Progress Bar -->
+                            <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+                                <ul class="nav nav-pills">
+                                    <li class="nav-item">
+                                        <h6><span class="badge bg-warning text-dark me-2">1</span> Personal Detail</h6>
+                                    </li>
+                                    <li class="nav-item">
+                                        <h6><span class="badge bg-secondary text-light mx-3">2</span> Vehicle Detail</h6>
+                                    </li>
+                                    <li class="nav-item">
+                                        <h6><span class="badge bg-secondary text-light mx-3">3</span> Tax Detail</h6>
+                                    </li>
+                                    <li class="nav-item">
+                                        <h6><span class="badge bg-secondary text-light mx-3">4</span> Payment</h6>
+                                    </li>
+                                    <li class="nav-item">
+                                        <h6><span class="badge bg-secondary text-light mx-3">5</span> Receipt</h6>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Form Section -->
+                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded">
+                                <h5 class="mb-0">Personal Detail</h5>
+                            </div>
+
+                            <div class="bg-light p-4 rounded border">
+                                <p>Form content goes here...</p>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="d-flex justify-content-end mt-3">
+                                <button class="btn btn-dark">Next <span class="ms-2">&rarr;</span></button>
+                            </div>
+                        </div>
+                    </main>
+                    <?php
+                    //untuk add vehicle 
+                }elseif ($page == 'vehicle') {
+                    ?>
+                    <!-- Main Content -->
+                    <main class="col-md-10 ms-sm-auto px-md-4">
+                        <div class="py-4">
+                            <!-- Form Section -->
+                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded mt-5">
+                                <h5 class="mb-0">Data Vehicle</h5>
+                            </div>
+
+                            <div class="bg-light p-4 rounded border">
+                                <p>Form content goes here...</p>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="d-flex justify-content-end mt-3">
+                                <button class="btn btn-dark">Next <span class="ms-2">&rarr;</span></button>
+                            </div>
+                        </div>
+                    </main>
+                    <?php
+                }
+                    ?>
+            </div>
+        </div>
     </body>
 </html>

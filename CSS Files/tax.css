@@ -1,6 +1,21 @@
 body {
     font-family: 'Cantata One', serif;
     font-size: 20px;
+    background-color: #f8fcfd !important;
+}
+body, .container-fluid {
+    height: 100%; /* Mengatur kontainer agar tidak melampaui tinggi halaman */
+    overflow: hidden; /* Menyembunyikan overflow pada body, jika diperlukan */
+}
+.row {
+    height: 100%; /* Menjaga baris agar konten lainnya tidak menyebabkan scroll */
+}
+:root {
+    --primary-orange: #FF7D02;
+    --dark-blue: #09394A;
+    --grey-blue: #3C6471;
+    --light-grey: #E8F1F2;
+    --pastel-yellow: #F2E86D;
 }
 .navLogo {
     height: auto;
@@ -36,4 +51,30 @@ nav.navbar {
 }
 .spanCustom{
     padding-left: 10px;
+}
+.sidebar {
+    background-color: #325d6a !important;
+    height: 100vh; /* Pastikan sidebar memiliki tinggi penuh */
+    position: sticky; /* Membuat sidebar tetap di tempat saat di-scroll */
+    top: 0; /* Menetapkan posisi sticky pada atas halaman */
+    z-index: 100; /* Agar sidebar berada di atas konten lain */
+    overflow-y: auto; /* Menambahkan scroll pada sidebar jika isinya melebihi tinggi */
+}
+
+.sidebar a {
+    color: #fff !important;
+    text-decoration: none !important;
+    padding: 10px 20px !important;
+    display: block !important;
+    border-radius: 5px !important;
+}
+.sidebar a.active {
+    background-color: #577f8b !important;
+}
+.card {
+    height: 150px !important;
+}
+.custom-badge {
+    background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
+    color: white; /* Menjaga teks tetap putih */
 }

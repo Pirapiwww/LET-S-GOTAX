@@ -79,9 +79,9 @@
         </nav>
 
         <div class="hero container my-5 flex-grow-1">
-            <div class="row marginTop">
-                <div class="col-md-6 alignLeft">
-                    <h2 class="marginTop1">Your Tax Bill Information.</h2>
+            <div class="row mt-5">
+                <div class="col-md-6 alignLeft mt-5">
+                    <h2>Your Tax Bill Information.</h2>
                     <p class="mb-4">To view vehicle tax bills, customers can fill out the check account tax bill form by filling in the vehicle number and customer name.</p>
                     <hr>
             
@@ -111,7 +111,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-5 offset-md-1 marginTop2">
+                <div class="col-md-5 offset-md-1 mt-5">
                     <h4>Search Form</h4>
                     <div class="card p-4">
                         <?php if ($error): ?>

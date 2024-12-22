@@ -79,6 +79,41 @@ if ($isLoggedIn) {
         exit; // Pastikan tidak ada kode lain yang dieksekusi
     }    
 
+    if (isset($_GET['status']) && isset($_GET['akunId'])) {
+        $status = $_GET['status'];
+        $akunId = $_GET['akunId'];
+
+        // Cek apakah status sudah diperbarui
+        if (!isset($_SESSION['status_updated']) || $_SESSION['status_updated'] !== $akunId) {
+            if ($status == 'VERIFIED') {
+                $newStatus = 'VERIFIED';
+                // Update status dalam database
+                $updateStatusQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
+                $stmtStatus = $conn->prepare($updateStatusQuery);
+                $stmtStatus->bind_param('si', $newStatus, $akunId);
+                $stmtStatus->execute();
+                $stmtStatus->close();
+            } elseif ($status == 'NOT VERIFIED') {
+                $newStatus = 'NOT VERIFIED';
+                // Update status dalam database
+                $updateStatusQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
+                $stmtStatus = $conn->prepare($updateStatusQuery);
+                $stmtStatus->bind_param('si', $newStatus, $akunId);
+                $stmtStatus->execute();
+                $stmtStatus->close();
+
+                // Hapus semua data tabel databio di akunId = ?
+                $deleteQuery = "DELETE FROM databio WHERE akunId = ?";
+                $stmtDelete = $conn->prepare($deleteQuery);
+                $stmtDelete->bind_param('i', $akunId);
+                $stmtDelete->execute();
+                $stmtDelete->close();
+            }
+            header("Location: admin.php?pageAkun=user"); // Redirect ke halaman admin
+            exit; // Pastikan tidak ada kode lain yang dieksekusi
+        }
+    }
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Inisialisasi user ID
         $userId = $_SESSION['user_id'];
@@ -322,14 +357,14 @@ if ($isLoggedIn) {
 
             <!-- Navigation Bar -->
             <nav class="navbar navbar-expand-lg navbar-light fixed-top">
-            <div class="container">
-                <!-- Logo di kiri -->
-                <a class="navbar-brand me-auto" href="admin.php">
-                    <img src="images/let's gotax(logo).png" class="navLogo">
-                    <img src="images/let's gotax (logo2).png" class="navLogo2">
-                </a>
-            </div>
-        </nav>
+                <div class="container">
+                    <!-- Logo di kiri -->
+                    <a class="navbar-brand me-auto" href="admin.php">
+                        <img src="images/let's gotax(logo).png" class="navLogo">
+                        <img src="images/let's gotax (logo2).png" class="navLogo2">
+                    </a>
+                </div>
+            </nav>
 
             <!-- Main Content -->
             <div class="main-content p-4 w-100 mt-5">
@@ -390,14 +425,32 @@ if ($isLoggedIn) {
                                                         echo '<td><span class="badge bg-success">' . htmlspecialchars($row['status']) . '</span></td>';
                                                     } elseif ($row['status'] == 'NOT VERIFIED') {
                                                         echo '<td><span class="badge bg-danger">' . htmlspecialchars($row['status']) . '</span></td>';
+                                                    } elseif ($row['status'] == 'ON PROGRESS') {
+                                                        echo '<td><span class="badge custom-badge">' . htmlspecialchars($row['status']) . '</span></td>';
                                                     }
                                                     ?>
                                                     
                                                     <!-- Action untuk mengubah status -->
                                                     <td>
-                                                        <a href="admin.php?akunId=<?php echo $row['akunId']; ?>&status=VERIFIED" class="btn btn-sm btn-danger">Unverified Status</a>
-                                                        <a href="admin.php?akunId=<?php echo $row['akunId']; ?>&status=NOT VERIFIED" class="btn btn-sm btn-primary">Verified Status</a>
-                                                    </td>
+                                                        <p class = "text-danger"><?php echo htmlspecialchars($userPhoto); ?></p>
+                                                        <?php 
+                                                            $checkDatabio = "SELECT * FROM databio WHERE akunId = ?";  // Menambahkan titik koma di sini
+                                                            $stmtDatabio = $conn->prepare($checkDatabio);
+                                                            $stmtDatabio->bind_param('i', $row['akunId']); 
+                                                            $stmtDatabio->execute();
+                                                            $resultDatabio = $stmtDatabio->get_result();
+                                                            
+
+                                                            if($resultDatabio->num_rows > 0){
+                                                                ?>
+                                                                <a href="admin.php?akunId=<?php echo $row['akunId']; ?>&status=VERIFIED" class="btn btn-sm btn-primary">Verified Status</a>
+                                                                <?php
+                                                            } else {
+                                                                $error = 'Cannot Verified';
+                                                            }
+                                                        ?>
+                                                        <a href="admin.php?akunId=<?php echo $row['akunId']; ?>&status=NOT VERIFIED" class="btn btn-sm btn-danger">Unverified Status</a>
+                                                        </td>
                                                     <!-- Form untuk mengubah adminId -->
                                                     <td>
                                                         <form method="POST">
@@ -423,45 +476,6 @@ if ($isLoggedIn) {
                                                     </td>
                                                 </tr>
                                                 <?php
-                                                // ** Bagian untuk change status ** (Sudah ada di kode Anda)
-                                                if (isset($_GET['status']) && isset($_GET['akunId'])) {
-                                                    $status = $_GET['status'];
-                                                    $akunId = $_GET['akunId'];
-                                                    
-                                                    if ($status == 'VERIFIED') {
-                                                        $newStatus = 'VERIFIED';
-                                                        $updateStatusQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
-                                                        $stmtStatus = $conn->prepare($updateStatusQuery);
-                                                        $stmtStatus->bind_param('si', $newStatus, $akunId);
-                                                        $stmtStatus->execute();
-                                                        $stmtStatus->close();
-                                                    } elseif ($status == 'NOT VERIFIED') {
-                                                        $newStatus = 'NOT VERIFIED';
-                                                        $updateStatusQuery = "UPDATE akun SET status = ? WHERE akunId = ?";
-                                                        $stmtStatus = $conn->prepare($updateStatusQuery);
-                                                        $stmtStatus->bind_param('si', $newStatus, $akunId);
-                                                        $stmtStatus->execute();
-                                                        $stmtStatus->close();
-                                                    }
-                                                }
-
-                                                // ** Bagian untuk mengubah adminId ** setelah form disubmit
-                                                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                                                    foreach ($_POST as $key => $value) {
-                                                        // Mengecek jika key sesuai dengan pola adminChange_akunId
-                                                        if (strpos($key, 'adminChange_') === 0) {
-                                                            $akunId = str_replace('adminChange_', '', $key); // Mendapatkan akunId dari key
-                                                            $newAdminId = $value;
-
-                                                            // Update adminId untuk akun tertentu
-                                                            $updateAdminQuery = "UPDATE akun SET adminId = ? WHERE akunId = ?";
-                                                            $stmtAdmin = $conn->prepare($updateAdminQuery);
-                                                            $stmtAdmin->bind_param('ii', $newAdminId, $akunId);
-                                                            $stmtAdmin->execute();
-                                                            $stmtAdmin->close();
-                                                        }
-                                                    }
-                                                }
                                             }
                                         }  
                                     ?>
@@ -629,7 +643,7 @@ if ($isLoggedIn) {
                             </tbody>
                         </table>
                         
-                        <div class="d-flex justify-content-between align-items-center mb-3 ">
+                        <div class="d-flex justify-content-between align-items-center mb-3 mt-5">
                             <div>
                                 <h5>Image Personal</h5>
                             </div>
@@ -861,6 +875,7 @@ if ($isLoggedIn) {
                                         <th>Vehicle Plat</th>
                                         <th>Full Name</th>
                                         <th>Total Tax</th>
+                                        <th>Latest Payment</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -879,6 +894,7 @@ if ($isLoggedIn) {
                                                     <td><?php echo htmlspecialchars($row['platKendaraan']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['namaLengkap']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['totalPajak']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['lastPay']); ?></td>
                                                 </tr>
                                                 <?php
                                             }

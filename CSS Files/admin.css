@@ -2,13 +2,7 @@
 body {
     margin: 0;
     font-family: "Figtree", sans-serif;
-}
-:root {
-    --primary-orange: #FF7D02;
-    --dark-blue: #09394A;
-    --grey-blue: #3C6471;
-    --light-grey: #E8F1F2;
-    --pastel-yellow: #F2E86D;
+    background-color: var(--light-grey) !important;
 }
 
 .navLogo{
@@ -29,6 +23,13 @@ nav.navbar {
 }
 
 /* Sidebar */
+:root {
+    --primary-orange: #FF7D02;
+    --dark-blue: #09394A;
+    --grey-blue: #3C6471;
+    --light-grey: #E8F1F2;
+    --pastel-yellow: #F2E86D;
+}
 .sidebar {
     width: 250px;
     background-color: var(--dark-blue);
@@ -59,8 +60,7 @@ nav.navbar {
 
 /* Main Content */
 .main-content {
-    background-color: var(--light-grey);
-    height: 100vh;
+    height: 100% !important;
     margin-left: 260px;
 }
 .header {
@@ -120,6 +120,11 @@ select {
 .color1{
     color: var(--primary-orange) !important;
 }
+.custom-badge {
+    background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
+    color: white; /* Menjaga teks tetap putih */
+}
+
 
 
 

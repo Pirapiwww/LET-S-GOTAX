@@ -54,7 +54,7 @@ if ($isLoggedIn) {
         $userPhoto = $user['photoProfile'];
         $username = $user['username'];
         $email = $user['email'];
-        $status = $user['status'] ?? 'UNVERIFIED'; // Provide default value if status is null
+        $status = $user['status'];
     }
     $stmt->close();
 
@@ -116,8 +116,8 @@ if ($isLoggedIn) {
             }
         }
 
-        // ** Bagian 2 : untuk Menambahkan atau Update namaLengkap, alamat, nik, selfieKTP, photoKTP, noHP, dan kelamin **
-        if (isset($_POST['namaLengkap']) || isset($_POST['nik']) || isset($_POST['noHP']) || isset($_POST['kelamin']) || isset($_POST['alamat']) || isset($_POST['tanggalLahir']) || isset($_POST['alamatNow'])) {
+        // ** Bagian 2 : untuk add namaLengkap, alamat, nik, selfieKTP, photoKTP, noHP, dan kelamin **
+        if (isset($_POST['namaLengkap']) && isset($_POST['nik']) && isset($_POST['noHP']) && isset($_POST['kelamin']) && isset($_POST['alamat']) && isset($_POST['tanggalLahir']) && isset($_POST['alamatNow']) && isset($_FILES['photoKTP']) && $_FILES['photoKTP']['error'] == 0 && isset($_FILES['selfieKTP']) && $_FILES['selfieKTP']['error'] == 0) {
             
             $newNamaLengkap = $_POST['namaLengkap'] ?? null;
             $newAlamat = $_POST['alamat'] ?? null;
@@ -127,6 +127,8 @@ if ($isLoggedIn) {
             $newKelamin = $_POST['kelamin'] ?? null;
             $newTanggalLahir = $_POST['tanggalLahir'] ?? null;
             $adminId = 1;
+
+            $newStatus = 'ON PROGRESS';
 
             // Validasi NIK (16 digit)
             if (!empty($newNIK) && !preg_match('/^\d{16}$/', $newNIK)) {
@@ -144,22 +146,18 @@ if ($isLoggedIn) {
                     $stmt->bind_param('iisssssss', $userId, $adminId, $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $newAlamatNow, $newTanggalLahir);
                     $stmt->execute();
                     $stmt->close();
+
+                    $updateStatus = "UPDATE akun SET status = ? WHERE akunId = ?";
+                    $stmtStatus = $conn->prepare($updateStatus);
+                    $stmtStatus->bind_param('si', $newStatus, $userId);
+                    $stmtStatus->execute();
+                    $stmtStatus->close();
                     
                     echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
                 } else {
-                    // Update existing record
-                    $updateQuery = "UPDATE databio SET namaLengkap = ?, alamat = ?, nik = ?, noHP = ?, kelamin = ?, alamatNow = ?, tanggalLahir = ? WHERE akunId = ?";
-                    $stmt = $conn->prepare($updateQuery);
-                    $stmt->bind_param('ssssssssi', $newNamaLengkap, $newAlamat, $newNIK, $newNoHP, $newKelamin, $newAlamatNow, $newTanggalLahir, $userId);
-                    $stmt->execute();
-                    $stmt->close();
-                    echo "<script>window.location.href = window.location.href;</script>"; // Refresh halaman
+                    $error = 'Tidak bisa mengubah data personal apabila sudah di submit';
                 }
             }
-        }
-
-        // ** Bagian 3: untuk update atau add photoKTP dan selfieKTP
-        if (isset($_FILES['photoKTP']) && $_FILES['photoKTP']['error'] == 0 && isset($_FILES['selfieKTP']) && $_FILES['selfieKTP']['error'] == 0) {
 
             // Bagian untuk Photo KTP
             $targetDir1 = "Images/data/photoKTP/"; // Folder penyimpanan file
@@ -176,69 +174,47 @@ if ($isLoggedIn) {
             // Validasi jenis file (hanya gambar)
             $allowTypes = array('jpg', 'png', 'jpeg', 'gif', 'bmp');
 
-            if (in_array(strtolower($fileType1), $allowTypes) && in_array(strtolower($fileType2), $allowTypes)) {
-                // Proses foto KTP
-                $query = "SELECT photoKTP FROM databio WHERE akunId = ?";
-                $stmt = $conn->prepare($query);
-                $stmt->bind_param('i', $userId);
-                $stmt->execute();
-                $result = $stmt->get_result();
-                if ($result->num_rows > 0) {
-                    $row = $result->fetch_assoc();
-                    $oldFileName = $row['photoKTP'];
-                    $oldFilePath = $targetDir1 . $oldFileName;
+            // Cek apakah file Photo KTP dan Selfie KTP sudah ada di database
+            $query = "SELECT photoKTP, photoKTPSelfie FROM databio WHERE akunId = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param('i', $userId);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+            $stmt->close();
 
-                    // Hapus file lama jika ada
-                    if (file_exists($oldFilePath)) {
-                        unlink($oldFilePath); // Hapus file lama
-                    }
-                }
-                $stmt->close();
-
-                // Pindahkan file baru untuk Photo KTP
-                if (move_uploaded_file($_FILES["photoKTP"]["tmp_name"], $targetFilePath1)) {
-                    // Simpan nama file baru ke database
-                    $updateFileQuery = "UPDATE databio SET photoKTP = ? WHERE akunId = ?";
-                    $stmt = $conn->prepare($updateFileQuery);
-                    $stmt->bind_param('si', $fileName1, $userId);
-                    $stmt->execute();
-                } else {
-                    echo "Maaf, terjadi kesalahan saat mengunggah file KTP.";
-                }
-
-                // Proses Selfie KTP
-                $query2 = "SELECT photoKTPSelfie FROM databio WHERE akunId = ?";
-                $stmt2 = $conn->prepare($query2);
-                $stmt2->bind_param('i', $userId);
-                $stmt2->execute();
-                $result2 = $stmt2->get_result();
-                if ($result2->num_rows > 0) {
-                    $row2 = $result2->fetch_assoc();
-                    $oldFileName2 = $row2['photoKTPSelfie'];
-                    $oldFilePath2 = $targetDir2 . $oldFileName2;
-
-                    // Hapus file lama jika ada
-                    if (file_exists($oldFilePath2)) {
-                        unlink($oldFilePath2); // Hapus file lama
-                    }
-                }
-                $stmt2->close();
-
-                // Pindahkan file baru untuk Selfie KTP
-                if (move_uploaded_file($_FILES["selfieKTP"]["tmp_name"], $targetFilePath2)) {
-                    // Simpan nama file baru ke database
-                    $updateFileQuery2 = "UPDATE databio SET photoKTPSelfie = ? WHERE akunId = ?";
-                    $stmt2 = $conn->prepare($updateFileQuery2);
-                    $stmt2->bind_param('si', $fileName2, $userId);
-                    $stmt2->execute();
-                    $stmt2->close();
-                    echo "<script>window.location.href = window.location.href;</script>";  // Refresh halaman
-                    echo "File berhasil diupload, file lama dihapus.";
-                } else {
-                    echo "Maaf, terjadi kesalahan saat mengunggah file Selfie KTP.";
-                }
+            // Cek apakah kedua file sudah ada
+            if ($row['photoKTP'] != null || $row['photoKTPSelfie'] != null) {
+                $error = 'Tidak bisa mengubah data personal apabila sudah di submit';
             } else {
-                echo "Hanya file gambar (JPG, PNG, JPEG, GIF, BMP) yang diperbolehkan untuk KTP dan Selfie KTP.";
+                // Proses foto KTP dan Selfie KTP hanya jika belum diupload sebelumnya
+                if (in_array(strtolower($fileType1), $allowTypes) && in_array(strtolower($fileType2), $allowTypes)) {
+                    // Pindahkan file baru untuk Photo KTP
+                    if (move_uploaded_file($_FILES["photoKTP"]["tmp_name"], $targetFilePath1)) {
+                        // Simpan nama file baru ke database
+                        $updateFileQuery = "UPDATE databio SET photoKTP = ? WHERE akunId = ?";
+                        $stmt = $conn->prepare($updateFileQuery);
+                        $stmt->bind_param('si', $fileName1, $userId);
+                        $stmt->execute();
+                    } else {
+                        echo "Maaf, terjadi kesalahan saat mengunggah file KTP.";
+                    }
+
+                    // Pindahkan file baru untuk Selfie KTP
+                    if (move_uploaded_file($_FILES["selfieKTP"]["tmp_name"], $targetFilePath2)) {
+                        // Simpan nama file baru ke database
+                        $updateFileQuery2 = "UPDATE databio SET photoKTPSelfie = ? WHERE akunId = ?";
+                        $stmt2 = $conn->prepare($updateFileQuery2);
+                        $stmt2->bind_param('si', $fileName2, $userId);
+                        $stmt2->execute();
+                        $stmt2->close();
+                        echo "File berhasil diupload, file lama dihapus.";
+                    } else {
+                        echo "Maaf, terjadi kesalahan saat mengunggah file Selfie KTP.";
+                    }
+                } else {
+                    echo "Hanya file gambar (JPG, PNG, JPEG, GIF, BMP) yang diperbolehkan untuk KTP dan Selfie KTP.";
+                }
             }
         }
         
@@ -296,7 +272,7 @@ if ($isLoggedIn) {
             $massage = $_POST['massage'] ?? null;
         
             $adminId = 1; // Admin ID default
-            
+
             $sql_insert = "INSERT INTO contact (akunId, adminId, titleContact, massageContact) VALUES (?, ?, ?, ?)";
                 
             $stmt_insert = $conn->prepare($sql_insert);
@@ -342,6 +318,14 @@ if ($isLoggedIn) {
                                 <li class="dropdown-item text-center">
                                     <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" class="rounded-circle mb-2" width="80" height="80">
                                     <p class="mb-0 fw-bold"><?php echo htmlspecialchars($username); ?></p>
+                                    <?php
+                                        // Menampilkan status berdasarkan nilai status
+                                        if ($status == 'VERIFIED') {
+                                            echo '<span class="badge bg-success">' . htmlspecialchars($status) . '</span>';
+                                        } elseif ($status == 'NOT VERIFIED') {
+                                            echo '<span class="badge bg-danger">' . htmlspecialchars($status) . '</span>';
+                                        }
+                                    ?>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="home.php">
@@ -349,26 +333,26 @@ if ($isLoggedIn) {
                                     <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
                                     </svg><span class="spanCustom"> Home</span>
                                 </a></li>
-                                <li><a class="dropdown-item" href="notif.php">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bell" viewBox="0 0 16 16">
-                                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6"/>
-                                    </svg>
-                                    <span class="spanCustom">Notification</span>
-                                </a></li>
-                                <li><a class="dropdown-item" href="tax.php">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-car-front" viewBox="0 0 16 16">
-                                    <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
-                                    <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
-                                    </svg>
-                                    <span class="spanCustom">Tax</span>
-                                </a></li>
-                                <li><a class="dropdown-item" href="point.php">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
-                                    <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
-                                    <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
-                                    </svg>
-                                    <span class="spanCustom">Point</span>
-                                </a></li>
+                                <?php 
+                                    if($status == 'VERIFIED') {
+                                        ?>
+                                        <li><a class="dropdown-item" href="tax.php">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-car-front" viewBox="0 0 16 16">
+                                            <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
+                                            <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
+                                            </svg>
+                                            <span class="spanCustom">Tax</span>
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="point.php">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-award" viewBox="0 0 16 16">
+                                            <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
+                                            <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
+                                            </svg>
+                                            <span class="spanCustom">Point</span>
+                                        </a></li>
+                                        <?php
+                                    }
+                                ?>
                                 <li><a class="dropdown-item" href="settings.php">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
                                     <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/>
@@ -389,15 +373,26 @@ if ($isLoggedIn) {
                 </div>
             </div>
         </nav>
-
-        <!-- Formulir Settings -->
-            <div class="container">
-                <div class="main-container justify-content-center">
+        
+        <div class = "mt-5">
+            <!-- Formulir Settings -->
+            <div class="container mt-5">
+                <div class="main-container justify-content-center mt-5">
                     <div class="row">
                         <div class="col-md-3 sidebar">
                             <div class="text-center mb-4">
                                 <img src="Images/photoProfile/<?php echo htmlspecialchars($userPhoto); ?>" alt="Profile" class="rounded-circle" width="150" height="150">
                                 <h5 class="mb-0 fw-bold spacing"><?php echo htmlspecialchars($username); ?></h5>
+                                <h5 class="mt-3">
+                                    <?php
+                                        // Menampilkan status berdasarkan nilai status
+                                        if ($status == 'VERIFIED') {
+                                            echo '<span class="badge bg-success">' . htmlspecialchars($status) . '</span>';
+                                        } elseif ($status == 'NOT VERIFIED') {
+                                            echo '<span class="badge bg-danger">' . htmlspecialchars($status) . '</span>';
+                                        }
+                                    ?>
+                                </h5>
                                 <!-- Button untuk membuka modal -->
                                 <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#changeImageModal">Change</button>
 
@@ -493,6 +488,9 @@ if ($isLoggedIn) {
                                                     <li>Please fill in the personal data form to change the account status to "VERIFIED"</li>
                                                     <li>Accounts with "VERIFIED" status will get access to the "Tax" segment</li>
                                                     <li>Every tax payment in the "Tax" segment will get points (see the "Point" segment for more information)</li>
+                                                    <li>Tax and point segments will not appear in the menu if personal data has not been filled in or the account status is "NOT VERIFIED"</li>
+                                                    <li>Personal data can only be submitted once</li>
+                                                    <li>After filling in the personal data status data to be 'ON PROGRESS'. Wait until it becomes 'VERIFIED', if it becomes 'NOT VERIFIED', it means there is an error. Please refill personal data if the account status becomes 'NOT VERIFIED' again.</li>
                                                 </ul> <hr>
                                             </div>
                                         </div>
@@ -584,6 +582,6 @@ if ($isLoggedIn) {
                     </div>
                 </div>
             </div>
-        
+        </div>
     </body>
 </html>
