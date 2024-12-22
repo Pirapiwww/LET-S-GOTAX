@@ -73,7 +73,7 @@
             }
         
             // Query untuk memeriksa apakah akunId dan id_kendaraan valid
-            $checkQuery = "SELECT * FROM vehicle WHERE akunId = ? AND id_kendaraan = ?";
+            $checkQuery = "SELECT * FROM kendaraan WHERE akunId = ? AND id_kendaraan = ?";
             $stmtCheck = $conn->prepare($checkQuery);
         
             if ($stmtCheck) {
@@ -84,7 +84,7 @@
                 // Jika data ditemukan
                 if ($resultCheck->num_rows > 0) {
                     // Reset semua statusPilih menjadi 'UNSELECTED'
-                    $resetQuery = "UPDATE vehicle SET statusPilih = 'UNSELECTED' WHERE statusPilih = 'SELECTED'";
+                    $resetQuery = "UPDATE kendaraan SET statusPilih = 'UNSELECTED' WHERE statusPilih = 'SELECTED'";
                     $stmtReset = $conn->prepare($resetQuery);
         
                     if ($stmtReset) {
@@ -96,7 +96,7 @@
                     }
         
                     // Set statusPilih menjadi 'SELECTED' untuk id_kendaraan yang dipilih
-                    $updateQuery = "UPDATE vehicle SET statusPilih = 'SELECTED' WHERE akunId = ? AND id_kendaraan = ?";
+                    $updateQuery = "UPDATE kendaraan SET statusPilih = 'SELECTED' WHERE akunId = ? AND id_kendaraan = ?";
                     $stmtUpdate = $conn->prepare($updateQuery);
         
                     if ($stmtUpdate) {
@@ -135,7 +135,7 @@
                 $adminId = '1';
             
                 // Cek apakah data kendaraan sudah terdaftar berdasarkan No. Rangka
-                $sql_check = "SELECT * FROM vehicle WHERE No_Rangka = ?";
+                $sql_check = "SELECT * FROM kendaraan WHERE No_Rangka = ?";
                 $stmt_check = $conn->prepare($sql_check);
                 $stmt_check->bind_param("s", $noRangka);
                 $stmt_check->execute();
@@ -146,7 +146,7 @@
                     $error = "Data kendaraan sudah ada!";
                 } else {
                     // Menambahkan data kendaraan ke database
-                    $sql_insert = "INSERT INTO vehicle (adminId, akunId, No_Rangka, No_Mesin, No_Plat, namaPemilik, statusPilih, jenisKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    $sql_insert = "INSERT INTO kendaraan (adminId, akunId, No_Rangka, No_Mesin, No_Plat, namaPemilik, statusPilih, jenisKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt_insert = $conn->prepare($sql_insert);
                     $stmt_insert->bind_param("ssssssss", $adminId, $userId, $noRangka, $noMesin, $noPlat, $namaPemilik, $statusPilih, $jenisVehicle);
                     $stmt_insert->execute();
@@ -419,7 +419,7 @@
                                 </div>
                                 <div class="bg-light p-4 rounded border">
                                     <?php 
-                                        $queryVehicle1 = "SELECT * FROM vehicle WHERE akunId = ?";
+                                        $queryVehicle1 = "SELECT * FROM kendaraan WHERE akunId = ?";
                                         $stmtVehicle1 = $conn->prepare($queryVehicle1);
                                         $stmtVehicle1->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
                                         $stmtVehicle1->execute();
@@ -711,7 +711,7 @@
                             <div class="container mt-2">
                                 <div class="overflow-auto" style="white-space: nowrap;">
                                 <?php 
-                                    $queryVehicle = "SELECT * FROM vehicle WHERE akunId = ?";
+                                    $queryVehicle = "SELECT * FROM kendaraan WHERE akunId = ?";
                                     $stmtVehicle = $conn->prepare($queryVehicle);
                                     $stmtVehicle->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
                                     $stmtVehicle->execute();

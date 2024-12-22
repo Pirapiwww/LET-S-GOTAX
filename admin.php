@@ -793,7 +793,7 @@ if ($isLoggedIn) {
                                 }
 
                                 // Query kendaraan untuk adminId
-                                $queryVehicle = "SELECT * FROM vehicle WHERE adminId = ?";
+                                $queryVehicle = "SELECT * FROM kendaraan WHERE adminId = ?";
                                 $stmtVehicle = $conn->prepare($queryVehicle);
                                 $stmtVehicle->bind_param('i', $userId);
                                 $stmtVehicle->execute();
