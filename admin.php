@@ -176,7 +176,7 @@ if ($isLoggedIn) {
         }
 
         // ** Bagian untuk add data tax **
-        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax']) && isset($_POST['lastPay']) && isset($_POST['statusPajak']) && isset($_POST['dendaPajak']) && isset($_POST['nextPay']) && isset($_POST['jenisVehicle'])) {
+        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax']) && isset($_POST['lastPay']) && isset($_POST['statusPajak']) && isset($_POST['dendaPajak']) && isset($_POST['nextPay']) && isset($_POST['jenisKendaraan'])) {
             $namaTax = $_POST['namaTax'] ?? null;
             $plat = $_POST['plat'] ?? null;
             $totalTax = $_POST['totalTax'] ?? null;
@@ -184,7 +184,7 @@ if ($isLoggedIn) {
             $dendaPajak = $_POST['dendaPajak'] ?? null;
             $lastPay = $_POST['lastPay'] ?? null;
             $nextPay = $_POST['nextPay'] ?? null;
-            $jenisVehicle = $_POST['jenisVehicle'] ?? null;
+            $jenisKendaraan = $_POST['jenisKendaraan'] ?? null;
 
             // Cek apakah email atau username sudah terdaftar
             $sql_check = "SELECT * FROM tax";
@@ -198,7 +198,7 @@ if ($isLoggedIn) {
             } else {
                 $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, jenisKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
-                $stmt_insert->bind_param("sssssssss", $userId, $namaTax, $plat, $totalTax, $lastPay, $statusPajak, $dendaPajak, $nextPay, $jenisVehicle);
+                $stmt_insert->bind_param("sssssssss", $userId, $namaTax, $plat, $totalTax, $lastPay, $statusPajak, $dendaPajak, $nextPay, $jenisKendaraan);
                 $stmt_insert->execute();
                 
                 $stmt_insert->close();
@@ -323,12 +323,12 @@ if ($isLoggedIn) {
                             </svg>
                             Data Personal
                         </a>
-                        <a href="admin.php?page=vehicle" class="<?= $page == 'vehicle' ? 'active' : '' ?>">
+                        <a href="admin.php?page=Kendaraan" class="<?= $page == 'Kendaraan' ? 'active' : '' ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-car-front" viewBox="0 0 16 16">
                             <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
                             <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
                             </svg>
-                            Data Vehicle
+                            Data Kendaraan
                         </a>
                         <a href="admin.php?page=tax" class="<?= $page == 'tax' ? 'active' : '' ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bank" viewBox="0 0 16 16">
@@ -742,14 +742,14 @@ if ($isLoggedIn) {
                     </div>
 
                     <?php
-                    //untuk data vehicle
-                } elseif ($page == 'vehicle') {
+                    //untuk data Kendaraan
+                } elseif ($page == 'Kendaraan') {
                     ?>
 
                     
                     <!-- Header -->
                     <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Data Vehicle</h4>
+                        <h4>Data Kendaraan</h4>
                     </div>
 
                     <!-- Stats Section -->
@@ -761,18 +761,18 @@ if ($isLoggedIn) {
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <h5>Data Vehicle</h5>
+                                <h5>Data Kendaraan</h5>
                             </div>
                         </div>
                         <table class="table table-bordered align-middle" id="members-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Username Account</th>
-                                    <th>Vehicle Owner Name</th>
-                                    <th>Vehicle Chassis Number</th>
-                                    <th>Vehicle Engine Number</th>
-                                    <th>Vehicle Plat</th>
-                                    <th>Vehicle Type</th>
+                                    <th>Kendaraan Owner Name</th>
+                                    <th>Kendaraan Chassis Number</th>
+                                    <th>Kendaraan Engine Number</th>
+                                    <th>Kendaraan Plat</th>
+                                    <th>Kendaraan Type</th>
                                 </tr>
                             </thead>
                                 <hr>
@@ -793,24 +793,24 @@ if ($isLoggedIn) {
                                 }
 
                                 // Query kendaraan untuk adminId
-                                $queryVehicle = "SELECT * FROM kendaraan WHERE adminId = ?";
-                                $stmtVehicle = $conn->prepare($queryVehicle);
-                                $stmtVehicle->bind_param('i', $userId);
-                                $stmtVehicle->execute();
-                                $resultVehicle = $stmtVehicle->get_result();
+                                $queryKendaraan = "SELECT * FROM kendaraan WHERE adminId = ?";
+                                $stmtKendaraan = $conn->prepare($queryKendaraan);
+                                $stmtKendaraan->bind_param('i', $userId);
+                                $stmtKendaraan->execute();
+                                $resultKendaraan = $stmtKendaraan->get_result();
 
                                 if (!empty($usernames)) {
                                     foreach ($usernames as $username) {
-                                        if ($resultVehicle->num_rows > 0) {
-                                            while ($rowVehicle = $resultVehicle->fetch_assoc()) {
+                                        if ($resultKendaraan->num_rows > 0) {
+                                            while ($rowKendaraan = $resultKendaraan->fetch_assoc()) {
                                                 ?>
                                                 <tr>
                                                     <td><?php echo htmlspecialchars($username); ?></td>
-                                                    <td><?php echo htmlspecialchars($rowVehicle['namaPemilik']); ?></td>
-                                                    <td><?php echo htmlspecialchars($rowVehicle['No_Rangka']); ?></td>
-                                                    <td><?php echo htmlspecialchars($rowVehicle['No_Mesin']); ?></td>
-                                                    <td><?php echo htmlspecialchars($rowVehicle['No_Plat']); ?></td>
-                                                    <td><?php echo htmlspecialchars($rowVehicle['jenisKendaraan']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowKendaraan['namaPemilik']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowKendaraan['No_Rangka']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowKendaraan['No_Mesin']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowKendaraan['No_Plat']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowKendaraan['jenisKendaraan']); ?></td>
                                                 </tr>
                                                 <?php
                                             }
@@ -856,20 +856,20 @@ if ($isLoggedIn) {
                                                         <input type="text" class="form-control" id="namaTax" name="namaTax" placeholder="Enter full name" required>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label for="plat" class="form-label">Vehicle Plat<span style="color: red;">*</span></label>
-                                                        <input type="text" class="form-control" id="plat" name="plat" placeholder="Enter Vehicle Plat" required>
+                                                        <label for="plat" class="form-label">Kendaraan Plat<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="plat" name="plat" placeholder="Enter Kendaraan Plat" required>
                                                         <small id="numberHelp" class="form-text text-muted">Format : XX YYYY XX (Capital)</small>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label for="jenisVehicle" class="form-label">Vehicle Type<span style="color: red;">*</span></label>
-                                                        <select class="form-select" id="jenisVehicle" name="jenisVehicle" required>
+                                                        <label for="jenisKendaraan" class="form-label">Kendaraan Type<span style="color: red;">*</span></label>
+                                                        <select class="form-select" id="jenisKendaraan" name="jenisKendaraan" required>
                                                             <option value="">Select Type</option>
-                                                            <option value="PRIBADI">Private Vehicle</option>
-                                                            <option value="UMUM">Public Vehicle</option>
-                                                            <option value="NIAGA">Commercial Vehicle</option>
-                                                            <option value="DINAS">Official Vehicle</option>
-                                                            <option value="KHUSUS">Special Vehicle</option>
-                                                            <option value="LISTRIK">Electric Vehicle</option>
+                                                            <option value="PRIBADI">Private Kendaraan</option>
+                                                            <option value="UMUM">Public Kendaraan</option>
+                                                            <option value="NIAGA">Commercial Kendaraan</option>
+                                                            <option value="DINAS">Official Kendaraan</option>
+                                                            <option value="KHUSUS">Special Kendaraan</option>
+                                                            <option value="LISTRIK">Electric Kendaraan</option>
                                                         
                                                         </select>
                                                     </div>
@@ -912,8 +912,8 @@ if ($isLoggedIn) {
                             <table class="table table-bordered align-middle" id="members-table">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Vehicle Plat</th>
-                                        <th>Vehicle Type</th>
+                                        <th>Kendaraan Plat</th>
+                                        <th>Kendaraan Type</th>
                                         <th>Full Name</th>
                                         <th>Total Tax</th>
                                         <th>Latest Payment</th>
