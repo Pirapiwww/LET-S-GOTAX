@@ -3,6 +3,7 @@
     include 'config.php';
 
     $page = isset($_GET['page']) ? $_GET['page'] : 'home';
+    $subPage = isset($_GET['subPage']) ? $_GET['subPage'] : 'personal';
 
     $isLoggedIn = isset($_SESSION['user_id']);
     $userPhoto = '';
@@ -98,6 +99,8 @@
                                             echo '<span class="badge bg-success">' . htmlspecialchars($status) . '</span>';
                                         } elseif ($status == 'NOT VERIFIED') {
                                             echo '<span class="badge bg-danger">' . htmlspecialchars($status) . '</span>';
+                                        } elseif ($status == 'ON PROGRESS') {
+                                            echo '<span class="badge bg-secondary">' . htmlspecialchars($status) . '</span>';
                                         }
                                     ?>
                                 </li>
@@ -207,44 +210,287 @@
                     <?php
                     //untuk tax payment
                 }elseif ($page == 'pay') {
-                    ?>
-                    <!-- Main Content -->
-                    <main class="col-md-10 ms-sm-auto px-md-4">
-                        <div class="py-4">
-                            <!-- Progress Bar -->
-                            <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
-                                <ul class="nav nav-pills">
-                                    <li class="nav-item">
-                                        <h6><span class="badge bg-warning text-dark me-2">1</span> Personal Detail</h6>
-                                    </li>
-                                    <li class="nav-item">
-                                        <h6><span class="badge bg-secondary text-light mx-3">2</span> Vehicle Detail</h6>
-                                    </li>
-                                    <li class="nav-item">
-                                        <h6><span class="badge bg-secondary text-light mx-3">3</span> Tax Detail</h6>
-                                    </li>
-                                    <li class="nav-item">
-                                        <h6><span class="badge bg-secondary text-light mx-3">4</span> Payment</h6>
-                                    </li>
-                                    <li class="nav-item">
-                                        <h6><span class="badge bg-secondary text-light mx-3">5</span> Receipt</h6>
-                                    </li>
-                                </ul>
-                            </div>
+                    if ($subPage == 'personal') {
+                        ?>
+                        <!-- Main Content -->
+                        <main class="col-md-10 ms-sm-auto px-md-4">
+                            <div class="py-4">
+                                <!-- Progress Bar -->
+                                <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2">1</span> Personal Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">2</span> Vehicle Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">3</span> Tax Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">4</span> Payment</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">5</span> Receipt</h6>
+                                        </li>
+                                    </ul>
+                                </div>
 
-                            <!-- Form Section -->
-                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded">
-                                <h5 class="mb-0">Personal Detail</h5>
-                            </div>
+                                <!-- Form Section -->
+                                <div class="bg-warning text-dark py-2 px-3 mb-4 rounded">
+                                    <h5 class="mb-0">Personal Detail</h5>
+                                </div>
 
-                            <div class="bg-light p-4 rounded border">
-                                <p>Form content goes here...</p>
-                            </div>
+                                <div class="bg-light p-4 rounded border">
+                                    <h6>
+                                        Full Name (KTP) <span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($namaLengkap); ?></span></span>
+                                    </h6>
+                                    <h6>
+                                        Gender<span class="ps-5"><span class="ps-5"><span class="ps-4">: 
+                                        <?php 
+                                            if($kelamin == 'LAKI-LAKI'){
+                                                ?>
+                                                MALE
+                                                <?php
+                                            } elseif($kelamin == 'PEREMPUAN'){
+                                                ?> 
+                                                FEMALE
+                                                <?php
+                                            }
+                                        ?>
+                                    </span></span></span>
+                                    </h6>
 
-                            <!-- Navigation Buttons -->
-                            <div class="d-flex justify-content-end mt-3">
-                                <button class="btn btn-dark">Next <span class="ms-2">&rarr;</span></button>
-                            </div>
+                                    <h6>
+                                        NIK (KTP)<span class="ps-5"><span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($nik); ?></span></span></span>
+                                    </h6>
+                                    <h6>
+                                        Handphone Number<span class="ps-4">: <?php echo htmlspecialchars($noHP); ?></span>
+                                    </h6>
+                                    <h6>
+                                        Address (KTP) <span class="ps-5"><span class="ps-3"><span class="ps-1">: <?php echo htmlspecialchars($alamat); ?></span></span></span>
+                                    </h6>
+                                    <h6>
+                                        Current Address <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($alamatNow); ?></span>
+                                    </h6>
+                                </div>
+                                <!-- Navigation Buttons -->
+                                <div class="d-flex justify-content-end mt-3">
+                                    <!-- Next Button -->
+                                    <a href="tax.php?page=<?= $page ?>&subPage=vehiclePay" class="btn btn-dark">Next <span class="ms-2">&rarr;</span></a>
+                                </div>
+                        <?php
+                    } elseif ($subPage == 'vehiclePay'){
+                        ?>
+                        <!-- Main Content -->
+                        <main class="col-md-10 ms-sm-auto px-md-4">
+                            <div class="py-4">
+                                <!-- Progress Bar -->
+                                <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Personal Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">2</span> Vehicle Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">3</span> Tax Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">4</span> Payment</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">5</span> Receipt</h6>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <!-- Form Section -->
+                                <div class="bg-warning text-dark py-2 px-3 mb-4 rounded">
+                                    <h5 class="mb-0">Vehicle Detail</h5>
+                                </div>
+                                <div class="bg-light p-4 rounded border">
+                                    <h5></h5>
+                                </div>
+                                <div class="d-flex justify-content-between mt-3">
+                                    <!-- Previous Button (kiri) -->
+                                    <a href="tax.php?page=<?= $page ?>&subPage=personal" class="btn btn-dark"><span class="ms-2">&larr;</span> Previous</a>
+
+                                    <!-- Next Button (kanan) -->
+                                    <a href="tax.php?page=<?= $page ?>&subPage=tax" class="btn btn-dark ms-auto">Next <span class="ms-2">&rarr;</span></a>
+                                </div>
+
+                        <?php
+                    } elseif ($subPage == 'tax'){
+                        ?>
+                        <!-- Main Content -->
+                        <main class="col-md-10 ms-sm-auto px-md-4">
+                            <div class="py-4">
+                                <!-- Progress Bar -->
+                                <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Personal Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Vehicle Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">3</span> Tax Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">4</span> Payment</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">5</span> Receipt</h6>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Form Section -->
+                                <div class="bg-warning text-dark py-2 px-3 mb-4 rounded">
+                                    <h5 class="mb-0">Tax Detail</h5>
+                                </div>
+
+                                <div class="bg-light p-4 rounded border">
+                                    <h5></h5>
+                                    
+                                </div>
+                                <div class="d-flex justify-content-between mt-3">
+                                    <!-- Previous Button (kiri) -->
+                                    <a href="tax.php?page=<?= $page ?>&subPage=vehiclePay" class="btn btn-dark"><span class="ms-2">&larr;</span> Previous</a>
+
+                                    <!-- Next Button (kanan) -->
+                                    <a href="tax.php?page=<?= $page ?>&subPage=pay" class="btn btn-dark ms-auto">Next <span class="ms-2">&rarr;</span></a>
+                                </div>
+
+                        <?php
+                    } elseif ($subPage == 'pay'){
+                        ?>
+                        <!-- Main Content -->
+                        <main class="col-md-10 ms-sm-auto px-md-4">
+                            <div class="py-4">
+                                <!-- Progress Bar -->
+                                <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Personal Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Vehicle Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Tax Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">4</span> Payment</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-secondary text-light mx-3">5</span> Receipt</h6>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Form Section -->
+                                <div class="bg-warning text-dark py-2 px-3 mb-4 rounded">
+                                    <h5 class="mb-0"> Payment</h5>
+                                </div>
+
+                                <div class="bg-light p-4 rounded border">
+                                    <h5></h5>
+                                </div>
+                                <div class="d-flex justify-content-between mt-3">
+                                    <!-- Previous Button (kiri) -->
+                                    <a href="tax.php?page=<?= $page ?>&subPage=tax" class="btn btn-dark"><span class="ms-2">&larr;</span> Previous</a>
+
+                                    <!-- Next Button (kanan) -->
+                                    <a href="tax.php?page=<?= $page ?>&subPage=receipt" class="btn btn-dark ms-auto">Pay Tax <span class="ms-2">&rarr;</span></a>
+                                </div>
+
+                        <?php
+                    } elseif ($subPage == 'receipt'){
+                        ?> 
+                        <!-- Main Content -->
+                        <main class="col-md-10 ms-sm-auto px-md-4">
+                            <div class="py-4">
+                                <!-- Progress Bar -->
+                                <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+                                    <ul class="nav nav-pills">
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Personal Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Vehicle Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Tax Detail</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0"/>
+                                                </svg>
+                                            </span> Payment</h6>
+                                        </li>
+                                        <li class="nav-item">
+                                            <h6><span class="badge bg-warning text-dark me-2 ms-3">5</span> Receipt</h6>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <!-- Form Section -->
+                                <div class="bg-warning text-dark py-2 px-3 mb-4 rounded">
+                                    <h5 class="mb-0">Receipt</h5>
+                                </div>
+
+                                <div class="bg-light p-4 rounded border">
+                                    <h5></h5>    
+                                </div>
+                                <!-- Navigation Buttons -->
+                                <div class="d-flex justify-content-end mt-3">
+                                    <!-- Next Button -->
+                                    <a href="tax.php?page=home" class="btn btn-dark">Finish Payment<span class="ms-2">&rarr;</span></a>
+                                </div>
+
+                        <?php
+                    }
+                        ?>
                         </div>
                     </main>
                     <?php
@@ -260,12 +506,13 @@
                             </div>
 
                             <div class="bg-light p-4 rounded border">
-                                <p>Form content goes here...</p>
+                                <form method = "POST" action="">
+                                    
+                                </form>
                             </div>
 
-                            <!-- Navigation Buttons -->
-                            <div class="d-flex justify-content-end mt-3">
-                                <button class="btn btn-dark">Next <span class="ms-2">&rarr;</span></button>
+                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded mt-5">
+                                <h5 class="mb-0">List Data Vehicle</h5>
                             </div>
                         </div>
                     </main>

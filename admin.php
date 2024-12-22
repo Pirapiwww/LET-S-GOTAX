@@ -176,10 +176,15 @@ if ($isLoggedIn) {
         }
 
         // ** Bagian untuk add data tax **
-        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax'])) {
+        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax']) && isset($_POST['lastPay']) && isset($_POST['statusPajak']) && isset($_POST['dendaPajak']) && isset($_POST['nextPay']) && isset($_POST['jenisVehicle'])) {
             $namaTax = $_POST['namaTax'] ?? null;
             $plat = $_POST['plat'] ?? null;
             $totalTax = $_POST['totalTax'] ?? null;
+            $statusPajak = $_POST['statusPajak'] ?? null;
+            $dendaPajak = $_POST['dendaPajak'] ?? null;
+            $lastPay = $_POST['lastPay'] ?? null;
+            $nextPay = $_POST['nextPay'] ?? null;
+            $jenisVehicle = $_POST['jenisVehicle'] ?? null;
 
             // Cek apakah email atau username sudah terdaftar
             $sql_check = "SELECT * FROM tax";
@@ -191,9 +196,9 @@ if ($isLoggedIn) {
                 // Jika email atau username sudah terdaftar
                 $error = "Data tax sudah terdaftar!";
             } else {
-                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak) VALUES (?, ?, ?, ?)";
+                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, jenisKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
-                $stmt_insert->bind_param("ssss", $userId, $namaTax, $plat, $totalTax);
+                $stmt_insert->bind_param("sssssssss", $userId, $namaTax, $plat, $totalTax, $lastPay, $statusPajak, $dendaPajak, $nextPay, $jenisVehicle);
                 $stmt_insert->execute();
                 
                 $stmt_insert->close();
@@ -419,20 +424,20 @@ if ($isLoggedIn) {
                                                     <td><img src="Images/photoProfile/<?php echo htmlspecialchars($row['photoProfile']); ?>" alt="Profile" class="rounded-circle" width="40" height="40"></td>
                                                     <td><?php echo htmlspecialchars($row['username']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['email']); ?></td>
-                                                    <?php
-                                                    // Menampilkan status berdasarkan nilai status
-                                                    if ($row['status'] == 'VERIFIED') {
-                                                        echo '<td><span class="badge bg-success">' . htmlspecialchars($row['status']) . '</span></td>';
-                                                    } elseif ($row['status'] == 'NOT VERIFIED') {
-                                                        echo '<td><span class="badge bg-danger">' . htmlspecialchars($row['status']) . '</span></td>';
-                                                    } elseif ($row['status'] == 'ON PROGRESS') {
-                                                        echo '<td><span class="badge custom-badge">' . htmlspecialchars($row['status']) . '</span></td>';
-                                                    }
-                                                    ?>
                                                     
+                                                        <?php
+                                                        // Menampilkan status berdasarkan nilai status
+                                                        if ($row['status'] == 'VERIFIED') {
+                                                            echo '<td><span class="badge bg-success">' . htmlspecialchars($row['status']) . '</span></td>';
+                                                        } elseif ($row['status'] == 'NOT VERIFIED') {
+                                                            echo '<td><span class="badge bg-danger">' . htmlspecialchars($row['status']) . '</span></td>';
+                                                        } elseif ($row['status'] == 'ON PROGRESS') {
+                                                            echo '<td><span class="badge bg-secondary">' . htmlspecialchars($row['status']) . '</span></td>';
+                                                        }
+                                                        ?>
                                                     <!-- Action untuk mengubah status -->
                                                     <td>
-                                                        <p class = "text-danger"><?php echo htmlspecialchars($userPhoto); ?></p>
+                                                        <p class = "text-danger"><?php echo htmlspecialchars($error); ?></p>
                                                         <?php 
                                                             $checkDatabio = "SELECT * FROM databio WHERE akunId = ?";  // Menambahkan titik koma di sini
                                                             $stmtDatabio = $conn->prepare($checkDatabio);
@@ -856,10 +861,49 @@ if ($isLoggedIn) {
                                                     <div class="mb-3">
                                                         <label for="plat" class="form-label">Vehicle Plat<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="plat" name="plat" placeholder="Enter Vehicle Plat" required>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : XX YYYY XX (Capital)</small>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="jenisVehicle" class="form-label">Vehicle Type<span style="color: red;">*</span></label>
+                                                        <select class="form-select" id="jenisVehicle" name="jenisVehicle" required>
+                                                            <option value="">Select Type</option>
+                                                            <option value="PRIBADI">Private Vehicle</option>
+                                                            <option value="PRIBADI LAIN">Private Vehicle (others)</option>
+                                                            <option value="UMUM">Public Vehicle</option>
+                                                            <option value="NIAGA">Commercial Vehicle</option>
+                                                            <option value="DINAS">Official Vehicle</option>
+                                                            <option value="KHUSUS">Special Vehicle</option>
+                                                            <option value="LISTRIK">Electric Vehicle</option>
+                                                        
+                                                        </select>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label for="totalTax" class="form-label">Total Tax<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="totalTax" name="totalTax" placeholder="Enter Total Tax" required>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : Rp. xxx.xxx,-</small>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="lastPay" class="form-label">Latest Payment Date<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="lastPay" name="lastPay" placeholder="Enter Latest Payment Date" required>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : dd-mm-yyyy</small>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="dendaPajak" class="form-label">Tax Fine<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="dendaPajak" name="dendaPajak" placeholder="Enter Tax Fine" required>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : Rp. xxx.xxx,-</small>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="statusPajak" class="form-label">Status<span style="color: red;">*</span></label>
+                                                        <select class="form-select" id="statusPajak" name="statusPajak" required>
+                                                            <option value="">Select Status</option>
+                                                            <option value="ON TIME">ON TIME</option>
+                                                            <option value="OVERDUE">OVERDUE</option>
+                                                        </select>                                                    
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label for="nextPay" class="form-label">Next Payment Date<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="nextPay" name="nextPay" placeholder="EnterNext Payment Date" required>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : dd-mm-yyyy</small>
                                                     </div>
                                                     <button type="submit" class="btn btn-primary" name="submit">Add Data</button>
                                                 </form>
@@ -873,9 +917,14 @@ if ($isLoggedIn) {
                                 <thead class="table-light">
                                     <tr>
                                         <th>Vehicle Plat</th>
+                                        <th>Vehicle Type</th>
                                         <th>Full Name</th>
                                         <th>Total Tax</th>
                                         <th>Latest Payment</th>
+                                        <th>Tax Fine</th>
+                                        <th>Tax Status</th>
+                                        <th>Next Payment</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -892,9 +941,14 @@ if ($isLoggedIn) {
                                                 ?>  
                                                 <tr>
                                                     <td><?php echo htmlspecialchars($row['platKendaraan']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['jenisKendaraan']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['namaLengkap']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['totalPajak']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['lastPay']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['dendaPajak']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['status']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['nextPay']); ?></td>
+                                                    
                                                 </tr>
                                                 <?php
                                             }

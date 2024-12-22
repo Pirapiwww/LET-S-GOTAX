@@ -324,6 +324,8 @@ if ($isLoggedIn) {
                                             echo '<span class="badge bg-success">' . htmlspecialchars($status) . '</span>';
                                         } elseif ($status == 'NOT VERIFIED') {
                                             echo '<span class="badge bg-danger">' . htmlspecialchars($status) . '</span>';
+                                        } elseif ($status == 'ON PROGRESS') {
+                                            echo '<span class="badge bg-secondary">' . htmlspecialchars($status) . '</span>';
                                         }
                                     ?>
                                 </li>
@@ -390,6 +392,8 @@ if ($isLoggedIn) {
                                             echo '<span class="badge bg-success">' . htmlspecialchars($status) . '</span>';
                                         } elseif ($status == 'NOT VERIFIED') {
                                             echo '<span class="badge bg-danger">' . htmlspecialchars($status) . '</span>';
+                                        } elseif ($status == 'ON PROGRESS') {
+                                            echo '<span class="badge bg-secondary">' . htmlspecialchars($status) . '</span>';
                                         }
                                     ?>
                                 </h5>

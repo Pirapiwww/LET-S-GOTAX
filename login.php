@@ -82,8 +82,8 @@
                     $stmt_update->execute();
 
                     // Login berhasil setelah hashing
-                    $_SESSION['user_id'] = $user['adminId'];
-                    $_SESSION['username'] = $user['usernameAdmin'];
+                    $_SESSION['user_id'] = $userAdmin['adminId'];
+                    $_SESSION['username'] = $userAdmin['usernameAdmin'];
 
                     header("Location: admin.php");
                     exit;
