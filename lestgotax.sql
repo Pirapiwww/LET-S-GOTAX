@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 20, 2024 at 11:08 AM
+-- Generation Time: Dec 22, 2024 at 02:13 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -11,13 +11,14 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `lestgotax`
+-- Database: `letsgotax`
 --
 
 -- --------------------------------------------------------
@@ -40,7 +41,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`adminId`, `usernameAdmin`, `emailAdmin`, `passwordAdmin`, `profileAdmin`, `last_login`) VALUES
-(1, 'SuperAdmin', 'superr@gmail.com', 'AdminSuper', 'profileDefault.jpg', '2024-12-20 09:53:38');
+(1, 'SuperAdmin', 'superr@gmail.com', '$2y$10$XtzQlnmrVPK0xKvYxRncXuE3RtSaiQx6ik5DJ7/yF3eZALUnPubY.', 'profileDefault.jpg', '2024-12-20 09:53:38');
 
 -- --------------------------------------------------------
 
@@ -55,7 +56,7 @@ CREATE TABLE `akun` (
   `username` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `photoProfile` varchar(255) NOT NULL,
-  `status` enum('VERIFIED','NOT VERIFIED') NOT NULL
+  `status` enum('VERIFIED','NOT VERIFIED','ON PROGRESS') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -63,7 +64,20 @@ CREATE TABLE `akun` (
 --
 
 INSERT INTO `akun` (`akunId`, `adminId`, `email`, `username`, `password`, `photoProfile`, `status`) VALUES
-(8, 1, 'unity@gmail.com', 'UNITY', '$2y$10$OpqnJFnbHSb5tkKe0o8aIOTGl6IGeVSjKoR8doEg6vTCVcXk8OO32', 'profileDefault.jpg', 'NOT VERIFIED');
+(8, 1, 'unity@gmail.com', 'UNITY', '$2y$10$OpqnJFnbHSb5tkKe0o8aIOTGl6IGeVSjKoR8doEg6vTCVcXk8OO32', 'profileDefault.jpg', 'VERIFIED');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `contact`
+--
+
+CREATE TABLE `contact` (
+  `contactId` int(11) NOT NULL,
+  `adminId` int(11) NOT NULL,
+  `titleContact` varchar(255) NOT NULL,
+  `massageContact` mediumtext NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -76,13 +90,22 @@ CREATE TABLE `databio` (
   `akunId` int(11) NOT NULL,
   `adminId` int(11) NOT NULL,
   `namaLengkap` varchar(255) NOT NULL,
-  `alamat` varchar(255) NOT NULL,
+  `alamat` mediumtext NOT NULL,
+  `alamatNow` mediumtext NOT NULL,
   `nik` char(16) NOT NULL,
   `photoKTPSelfie` varchar(255) NOT NULL,
   `photoKTP` varchar(255) NOT NULL,
   `noHP` char(12) NOT NULL,
-  `kelamin` enum('LAKI-LAKI','PEREMPUAN') NOT NULL
+  `kelamin` enum('LAKI-LAKI','PEREMPUAN') NOT NULL,
+  `tanggalLahir` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `databio`
+--
+
+INSERT INTO `databio` (`databioId`, `akunId`, `adminId`, `namaLengkap`, `alamat`, `alamatNow`, `nik`, `photoKTPSelfie`, `photoKTP`, `noHP`, `kelamin`, `tanggalLahir`) VALUES
+(6, 8, 1, 'Unity Lity', 'Jln. jus apel rasa pisang Blok L no.20', 'jln. jus pisang rasa apel Blok M no.20', '1234123412341234', '1734861282_TrySelfieKTP.png', '1734861282_TryKTP.png', '123456789012', 'LAKI-LAKI', 'Sleman, 26 Februari 2000');
 
 -- --------------------------------------------------------
 
@@ -95,9 +118,10 @@ CREATE TABLE `kendaraan` (
   `No_Rangka` varchar(50) NOT NULL,
   `No_Mesin` varchar(50) NOT NULL,
   `No_Plat` varchar(20) NOT NULL,
-  `Jumlah_Biaya` decimal(10,2) NOT NULL,
-  `tgl_Jatuh_Tempo` date NOT NULL,
-  `akunId` int(11) NOT NULL
+  `akunId` int(11) NOT NULL,
+  `namaPemilik` varchar(255) NOT NULL,
+  `statusPilih` enum('SELECTED','UNSELECTED') NOT NULL,
+  `jenisKendaraan` enum('PRIBADI','PRIBADI LAIN','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -178,18 +202,28 @@ INSERT INTO `status_pembayaran` (`id_Status_Pembayaran`, `Nama_Status_Pembayaran
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_messages`
+-- Table structure for table `tax`
 --
 
-CREATE TABLE `user_messages` (
-  `id` int(11) NOT NULL,
-  `akunId` int(11) NOT NULL,
-  `title` varchar(255) NOT NULL,
-  `message` text NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+CREATE TABLE `tax` (
+  `taxId` int(11) NOT NULL,
+  `adminId` int(11) NOT NULL,
+  `namaLengkap` varchar(255) NOT NULL,
+  `platKendaraan` varchar(255) NOT NULL,
+  `jenisKendaraan` enum('PRIBADI','PRIBADI LAIN','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL,
+  `totalPajak` varchar(255) NOT NULL,
+  `lastPay` varchar(255) NOT NULL,
+  `status` enum('ON TIME','OVERDUE') NOT NULL,
+  `dendaPajak` varchar(255) NOT NULL,
+  `nextPay` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
+--
+-- Dumping data for table `tax`
+--
+
+INSERT INTO `tax` (`taxId`, `adminId`, `namaLengkap`, `platKendaraan`, `jenisKendaraan`, `totalPajak`, `lastPay`, `status`, `dendaPajak`, `nextPay`) VALUES
+(1, 1, 'Aliya Hanifa', 'AB 2103 WS', 'PRIBADI', 'Rp. 254.000,-', '24-12-2023', 'ON TIME', 'Rp. 0,-', '24-12-2024');
 
 --
 -- Indexes for dumped tables
@@ -209,6 +243,12 @@ ALTER TABLE `akun`
   ADD PRIMARY KEY (`akunId`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `adminId` (`adminId`);
+
+--
+-- Indexes for table `contact`
+--
+ALTER TABLE `contact`
+  ADD PRIMARY KEY (`contactId`);
 
 --
 -- Indexes for table `databio`
@@ -237,7 +277,7 @@ ALTER TABLE `notif`
   ADD PRIMARY KEY (`notifId`),
   ADD UNIQUE KEY `akunId` (`akunId`),
   ADD UNIQUE KEY `adminId` (`adminId`),
-  ADD INDEX `tanggal_idx` (`tanggalNotif`);
+  ADD KEY `tanggal_idx` (`tanggalNotif`);
 
 --
 -- Indexes for table `pembayaran`
@@ -263,11 +303,11 @@ ALTER TABLE `status_pembayaran`
   ADD PRIMARY KEY (`id_Status_Pembayaran`);
 
 --
--- Indexes for table `user_messages`
+-- Indexes for table `tax`
 --
-ALTER TABLE `user_messages`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `akunId` (`akunId`);
+ALTER TABLE `tax`
+  ADD PRIMARY KEY (`taxId`),
+  ADD KEY `adminId` (`adminId`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -286,10 +326,16 @@ ALTER TABLE `akun`
   MODIFY `akunId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
+-- AUTO_INCREMENT for table `contact`
+--
+ALTER TABLE `contact`
+  MODIFY `contactId` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `databio`
 --
 ALTER TABLE `databio`
-  MODIFY `databioId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `databioId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `notif`
@@ -304,10 +350,10 @@ ALTER TABLE `point`
   MODIFY `pointId` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `user_messages`
+-- AUTO_INCREMENT for table `tax`
 --
-ALTER TABLE `user_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+ALTER TABLE `tax`
+  MODIFY `taxId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
@@ -340,10 +386,10 @@ ALTER TABLE `pembayaran`
   ADD CONSTRAINT `pembayaran_ibfk_2` FOREIGN KEY (`id_Status_Pembayaran`) REFERENCES `status_pembayaran` (`id_Status_Pembayaran`);
 
 --
--- Constraints for table `user_messages`
+-- Constraints for table `tax`
 --
-ALTER TABLE `user_messages`
-  ADD CONSTRAINT `user_messages_ibfk_1` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`);
+ALTER TABLE `tax`
+  ADD CONSTRAINT `tax_ibfk_1` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
