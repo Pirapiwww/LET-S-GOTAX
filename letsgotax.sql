@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 22, 2024 at 05:18 PM
+-- Generation Time: Dec 22, 2024 at 10:28 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -119,6 +119,7 @@ CREATE TABLE `kendaraan` (
   `No_Mesin` varchar(255) NOT NULL,
   `No_Plat` varchar(255) NOT NULL,
   `akunId` int(11) NOT NULL,
+  `adminId` int(11) NOT NULL,
   `namaPemilik` varchar(255) NOT NULL,
   `statusPilih` enum('SELECTED','UNSELECTED') NOT NULL,
   `jenisKendaraan` enum('PRIBADI','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL
@@ -316,7 +317,8 @@ ALTER TABLE `kendaraan`
   ADD UNIQUE KEY `No_Rangka` (`No_Rangka`),
   ADD UNIQUE KEY `No_Mesin` (`No_Mesin`),
   ADD UNIQUE KEY `No_Plat` (`No_Plat`),
-  ADD KEY `akunId` (`akunId`);
+  ADD KEY `akunId` (`akunId`),
+  ADD KEY `adminId` (`adminId`);
 
 --
 -- Indexes for table `notif`
@@ -463,39 +465,14 @@ ALTER TABLE `databio`
 -- Constraints for table `kendaraan`
 --
 ALTER TABLE `kendaraan`
-  ADD CONSTRAINT `kendaraan_ibfk_1` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`);
-
---
--- Constraints for table `pembayaran`
---
-ALTER TABLE `pembayaran`
-  ADD CONSTRAINT `pembayaran_ibfk_1` FOREIGN KEY (`id_kendaraan`) REFERENCES `kendaraan` (`id_kendaraan`),
-  ADD CONSTRAINT `pembayaran_ibfk_2` FOREIGN KEY (`id_Status_Pembayaran`) REFERENCES `status_pembayaran` (`id_Status_Pembayaran`);
+  ADD CONSTRAINT `kendaraan_ibfk_1` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`),
+  ADD CONSTRAINT `kendaraan_ibfk_2` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
 
 --
 -- Constraints for table `point_history`
 --
 ALTER TABLE `point_history`
   ADD CONSTRAINT `akunId` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`);
-
---
--- Constraints for table `tax`
---
-ALTER TABLE `tax`
-  ADD CONSTRAINT `tax_ibfk_1` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
-
---
--- Constraints for table `vouchers`
---
-ALTER TABLE `vouchers`
-  ADD CONSTRAINT `vouchers_ibfk_1` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
-
---
--- Constraints for table `voucher_redemptions`
---
-ALTER TABLE `voucher_redemptions`
-  ADD CONSTRAINT `voucher_redemptions_ibfk_1` FOREIGN KEY (`voucherId`) REFERENCES `vouchers` (`voucherId`),
-  ADD CONSTRAINT `voucher_redemptions_ibfk_2` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
