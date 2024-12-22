@@ -82,8 +82,8 @@
                     $stmt_update->execute();
 
                     // Login berhasil setelah hashing
-                    $_SESSION['user_id'] = $userAdmin['adminId'];
-                    $_SESSION['username'] = $userAdmin['usernameAdmin'];
+                    $_SESSION['admin_id'] = $userAdmin['adminId'];
+                    $_SESSION['usernameAdmin'] = $userAdmin['usernameAdmin'];
 
                     header("Location: admin.php");
                     exit;
@@ -93,8 +93,8 @@
             } else {
                 // Jika password sudah di-hash, langsung verifikasi
                 if (password_verify($passwordAdmin, $userAdmin['passwordAdmin'])) {
-                    $_SESSION['user_id'] = $userAdmin['adminId'];
-                    $_SESSION['username'] = $userAdmin['usernameAdmin'];
+                    $_SESSION['admin_id'] = $userAdmin['adminId'];
+                    $_SESSION['usernameAdmin'] = $userAdmin['usernameAdmin'];
 
                     header("Location: admin.php");
                     exit;

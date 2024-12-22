@@ -26,7 +26,7 @@ $error = '';
 
 // Jika pengguna login
 if ($isLoggedIn) {
-    $userId = $_SESSION['user_id'];
+    $userId = $_SESSION['admin_id'];
 
     // Query untuk mengambil data dari tabel akun
     $query = "SELECT * FROM admin WHERE adminId = ?";
@@ -746,83 +746,80 @@ if ($isLoggedIn) {
                 } elseif ($page == 'vehicle') {
                     ?>
 
+                    
                     <!-- Header -->
                     <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Dashboard</h4>
+                        <h4>Data Vehicle</h4>
                     </div>
 
                     <!-- Stats Section -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>54</h5>
-                                <p>Customers</p>
+                    <div class="container mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <button class="btn btn-outline-primary active" id="btn-members">Users</button>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>79</h5>
-                                <p>Projects</p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h5>Data Vehicle</h5>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded">
-                                <h5>124</h5>
-                                <p>Orders</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="stat-box p-3 rounded income">
-                                <h5>$6K</h5>
-                                <p>Income</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recent Projects -->
-                    <div class="mb-4">
-                        <h5>Recent Projects</h5>
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-bordered align-middle" id="members-table">
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Project Title</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
+                                    <th>Username Account</th>
+                                    <th>Vehicle Owner Name</th>
+                                    <th>Vehicle Chassis Number</th>
+                                    <th>Vehicle Engine Number</th>
+                                    <th>Vehicle Plat</th>
+                                    <th>Vehicle Type</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td>UI/UX Design</td>
-                                    <td>UI Team</td>
-                                    <td class="text-info">Review</td>
-                                </tr>
-                                <tr>
-                                    <td>Web Development</td>
-                                    <td>Frontend</td>
-                                    <td class="text-success">In Progress</td>
-                                </tr>
-                                <tr>
-                                    <td>Ushop App</td>
-                                    <td>Mobile Team</td>
-                                    <td class="text-danger">Pending</td>
-                                </tr>
+                                <hr>
+                                <?php 
+                                // Query untuk mendapatkan username dari tabel akun
+                                $queryAkun1 = "SELECT username FROM akun WHERE adminId = ?";
+                                $stmtAkun1 = $conn->prepare($queryAkun1);
+                                $stmtAkun1->bind_param('i', $userId);
+                                $stmtAkun1->execute();
+                                $resultAkun1 = $stmtAkun1->get_result();
+
+                                // Simpan username untuk digunakan nanti
+                                $usernames = [];
+                                if ($resultAkun1->num_rows > 0) {
+                                    while ($row = $resultAkun1->fetch_assoc()) {
+                                        $usernames[] = $row['username'];
+                                    }
+                                }
+
+                                // Query kendaraan untuk adminId
+                                $queryVehicle = "SELECT * FROM vehicle WHERE adminId = ?";
+                                $stmtVehicle = $conn->prepare($queryVehicle);
+                                $stmtVehicle->bind_param('i', $userId);
+                                $stmtVehicle->execute();
+                                $resultVehicle = $stmtVehicle->get_result();
+
+                                if (!empty($usernames)) {
+                                    foreach ($usernames as $username) {
+                                        if ($resultVehicle->num_rows > 0) {
+                                            while ($rowVehicle = $resultVehicle->fetch_assoc()) {
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($username); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowVehicle['namaPemilik']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowVehicle['No_Rangka']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowVehicle['No_Mesin']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowVehicle['No_Plat']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowVehicle['jenisKendaraan']); ?></td>
+                                                </tr>
+                                                <?php
+                                            }
+                                        }
+                                    }
+                                } 
+                                ?>
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- New Customers -->
-                    <div>
-                        <h5>New Customers</h5>
-                        <ul class="list-unstyled">
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                            <li class="d-flex align-items-center mb-2">
-                                <img src="https://via.placeholder.com/40" class="rounded-circle me-2" alt="Customer">
-                                <span>Lewis S. Cunningham - CEO Excerpt</span>
-                            </li>
-                        </ul>
                     </div>
 
                     <?php
@@ -868,7 +865,6 @@ if ($isLoggedIn) {
                                                         <select class="form-select" id="jenisVehicle" name="jenisVehicle" required>
                                                             <option value="">Select Type</option>
                                                             <option value="PRIBADI">Private Vehicle</option>
-                                                            <option value="PRIBADI LAIN">Private Vehicle (others)</option>
                                                             <option value="UMUM">Public Vehicle</option>
                                                             <option value="NIAGA">Commercial Vehicle</option>
                                                             <option value="DINAS">Official Vehicle</option>
