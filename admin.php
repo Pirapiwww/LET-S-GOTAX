@@ -1008,10 +1008,188 @@ if ($isLoggedIn) {
                             </tbody>
                         </table>
                     <?php
+                } elseif ($page == 'point') {
+                    ?>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-4" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link" id="btn-vouchers" data-bs-toggle="tab" data-bs-target="#voucherTab">
+                                Voucher Management
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link active" id="btn-points" data-bs-toggle="tab" data-bs-target="#pointTab">
+                                Point Management
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Points Tab -->
+                        <div class="tab-pane fade show active" id="pointTab">
+                            <div class="search-container">
+                                <input type="text" class="form-control search-input" placeholder="search">
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Name</th>
+                                            <th>last update</th>
+                                            <th>total point</th>
+                                            <th>type</th>
+                                            <th>status</th>
+                                            <th>action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $query = "SELECT p.*, a.username, ph.type, ph.transactionDate 
+                                                 FROM point p 
+                                                 JOIN akun a ON p.akunId = a.akunId
+                                                 LEFT JOIN point_history ph ON p.akunId = ph.akunId
+                                                 ORDER BY ph.transactionDate DESC";
+                                        $result = $conn->query($query);
+                                        $no = 1;
+                                        
+                                        while ($row = $result->fetch_assoc()):
+                                        ?>
+                                        <tr>
+                                            <td><?php echo $no++; ?></td>
+                                            <td><?php echo htmlspecialchars($row['username']); ?></td>
+                                            <td><?php echo date('d-m-Y H:i', strtotime($row['transactionDate'])); ?></td>
+                                            <td><?php echo $row['totalPoint']; ?> point</td>
+                                            <td class="<?php echo $row['type'] == 'earn' ? 'earn-text' : 'redeem-text'; ?>">
+                                                <?php echo $row['type']; ?>
+                                            </td>
+                                            <td><span class="status-pill">active</span></td>
+                                            <td class="action-buttons">
+                                                <a href="#" onclick="editPoint(<?php echo $row['akunId']; ?>)">
+                                                    <img src="Images/icons/edit.jpg" alt="Edit">
+                                                </a>
+                                                <a href="#" onclick="deletePoint(<?php echo $row['akunId']; ?>)">
+                                                    <img src="Images/icons/delete.jpg" alt="Delete">
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="pagination">
+                                <a href="#" class="prev-page">&lt;</a>
+                                <a href="#" class="page-number active">1</a>
+                                <a href="#" class="page-number">2</a>
+                                <a href="#" class="page-number">3</a>
+                                <a href="#" class="page-number">4</a>
+                                <span class="ellipsis">...</span>
+                                <a href="#" class="page-number">11</a>
+                                <a href="#" class="page-number">12</a>
+                                <a href="#" class="next-page">&gt;</a>
+                            </div>
+                        </div>
+
+                        <!-- Vouchers Tab -->
+                        <div class="tab-pane fade" id="voucherTab">
+                            <div class="search-container">
+                                <input type="text" class="form-control search-input" placeholder="search">
+                                <button class="btn btn-add" onclick="showAddVoucherModal()">Add</button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>voucher name</th>
+                                            <th>start date</th>
+                                            <th>end date</th>
+                                            <th>price</th>
+                                            <th>stock</th>
+                                            <th>status</th>
+                                            <th>action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $query = "SELECT * FROM vouchers ORDER BY created_at DESC";
+                                        $result = $conn->query($query);
+                                        $no = 1;
+                                        
+                                        while ($row = $result->fetch_assoc()):
+                                        ?>
+                                        <tr>
+                                            <td><?php echo $no++; ?></td>
+                                            <td><?php echo htmlspecialchars($row['voucherName']); ?></td>
+                                            <td><?php echo date('d-m-Y', strtotime($row['startDate'])); ?></td>
+                                            <td><?php echo date('d-m-Y', strtotime($row['endDate'])); ?></td>
+                                            <td><?php echo $row['price']; ?> point</td>
+                                            <td><?php echo $row['stock']; ?></td>
+                                            <td><span class="status-pill">active</span></td>
+                                            <td class="action-buttons">
+                                                <a href="#" onclick="editVoucher(<?php echo $row['voucherId']; ?>)">
+                                                    <img src="Images/icons/edit.jpg" alt="Edit">
+                                                </a>
+                                                <a href="#" onclick="deleteVoucher(<?php echo $row['voucherId']; ?>)">
+                                                    <img src="Images/icons/delete.jpg" alt="Delete">
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="pagination">
+                                <a href="#" class="prev-page">&lt;</a>
+                                <a href="#" class="page-number active">1</a>
+                                <a href="#" class="page-number">2</a>
+                                <a href="#" class="page-number">3</a>
+                                <a href="#" class="page-number">4</a>
+                                <span class="ellipsis">...</span>
+                                <a href="#" class="page-number">11</a>
+                                <a href="#" class="page-number">12</a>
+                                <a href="#" class="next-page">&gt;</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <?php
                 }
+
                     ?>
 
             </div>
         </div>
     </body>
 </html>
+
+<style>
+.shop-logo {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    color: white;
+}
+
+.status-badge.active {
+    background-color: #28a745;
+}
+
+.status-badge.inactive {
+    background-color: #dc3545;
+}
+</style>

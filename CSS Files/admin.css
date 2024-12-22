@@ -2,7 +2,7 @@
 body {
     margin: 0;
     font-family: "Figtree", sans-serif;
-    background-color: var(--light-grey) !important;
+    background-color: #f0f8ff;
 }
 
 .navLogo{
@@ -123,6 +123,243 @@ select {
 .custom-badge {
     background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
     color: white !important; /* Menjaga teks tetap putih */
+}
+
+/* Voucher Management Styles */
+.voucher-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    background-color: #f0f0f0;
+    border-radius: 5px;
+}
+
+.search-box {
+    display: flex;
+    gap: 10px;
+}
+
+.search-box input {
+    width: 300px;
+}
+
+.search-box .btn-warning {
+    background-color: #FFA500;
+    color: white;
+    border: none;
+}
+
+/* Table Styles */
+.voucher-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 5px;
+}
+
+.voucher-table thead tr {
+    background-color: #FFA500;
+}
+
+.voucher-table th {
+    padding: 15px;
+    color: #000;
+    font-weight: normal;
+}
+
+.voucher-table tbody tr {
+    background-color: #fff;
+    margin-bottom: 5px;
+}
+
+.voucher-table td {
+    padding: 15px;
+    border: none;
+}
+
+.status-badge {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.action-icon {
+    width: 20px;
+    height: 20px;
+    margin: 0 5px;
+    cursor: pointer;
+}
+
+/* Pagination Styles */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.page-link {
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #000;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.page-link.active {
+    background-color: #FFA500;
+    color: #fff;
+    border-color: #FFA500;
+}
+
+.page-dots {
+    padding: 5px 10px;
+}
+
+/* Tab Styles */
+.nav-tabs {
+    border: none;
+    margin-bottom: 20px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #000;
+    background: none;
+    padding: 10px 20px;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+/* Search Container */
+.search-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    width: 300px;
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.btn-add {
+    background-color: #ffa500;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 5px;
+}
+
+/* Table Styles */
+.custom-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 5px;
+}
+
+.custom-table thead tr {
+    background-color: #ffa500;
+}
+
+.custom-table th {
+    padding: 15px;
+    color: #000;
+    font-weight: normal;
+    border: none;
+}
+
+.custom-table tbody tr {
+    background-color: white;
+    margin-bottom: 5px;
+}
+
+.custom-table td {
+    padding: 15px;
+    border: none;
+}
+
+/* Status and Type Styles */
+.earn-text {
+    color: #28a745;
+}
+
+.redeem-text {
+    color: #dc3545;
+}
+
+.status-pill {
+    background-color: #28a745;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.action-buttons img {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 20px;
+}
+
+.pagination a,
+.pagination span {
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #000;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.pagination .active {
+    background-color: #ffa500;
+    color: white;
+    border-color: #ffa500;
+}
+
+.pagination .ellipsis {
+    border: none;
+}
+
+/* Background Color */
+body {
+    background-color: #f0f8ff;
 }
 
 
