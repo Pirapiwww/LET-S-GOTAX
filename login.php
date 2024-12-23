@@ -131,13 +131,10 @@
             <div id="carouselExample" class="carousel slide col-md-6 p-0 login-carousel" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <img src="https://via.placeholder.com/600x800?text=Image+1" class="d-block w-100" alt="Image 1">
+                        <img src="Images\LoginSignUp\image1.jpg" class="d-block w-100" alt="Image 1">
                     </div>
                     <div class="carousel-item">
-                        <img src="https://via.placeholder.com/600x800?text=Image+2" class="d-block w-100" alt="Image 2">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="https://via.placeholder.com/600x800?text=Image+3" class="d-block w-100" alt="Image 3">
+                        <img src="Images\LoginSignUp\image2.jpg" class="d-block w-100" alt="Image 2">
                     </div>
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselExample" data-bs-slide="prev">
