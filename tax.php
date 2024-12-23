@@ -124,13 +124,14 @@
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // ** Bagian untuk add akun admin **
-            if (isset($_POST['namaPemilik'], $_POST['rangka'], $_POST['mesin'], $_POST['plat'], $_POST['jenisVehicle'])) {
+            if (isset($_POST['namaPemilik'], $_POST['rangka'], $_POST['mesin'], $_POST['plat'], $_POST['jenisVehicle'], $_POST['tipeVehicle'])) {
                 // Mengambil data dari form
                 $namaPemilik = $_POST['namaPemilik'] ?? null;
                 $noRangka = $_POST['rangka'] ?? null;
                 $noMesin = $_POST['mesin'] ?? null;
                 $noPlat = $_POST['plat'] ?? null;
                 $jenisVehicle = $_POST['jenisVehicle'] ?? null;
+                $tipeVehicle = $_POST['tipeVehicle'] ?? null;
                 $statusPilih = 'UNSELECTED';
                 $adminId = '1';
             
@@ -146,9 +147,9 @@
                     $error = "Data kendaraan sudah ada!";
                 } else {
                     // Menambahkan data kendaraan ke database
-                    $sql_insert = "INSERT INTO kendaraan (adminId, akunId, No_Rangka, No_Mesin, No_Plat, namaPemilik, statusPilih, jenisKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                    $sql_insert = "INSERT INTO kendaraan (adminId, akunId, No_Rangka, No_Mesin, No_Plat, namaPemilik, statusPilih, jenisKendaraan, tipeKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     $stmt_insert = $conn->prepare($sql_insert);
-                    $stmt_insert->bind_param("ssssssss", $adminId, $userId, $noRangka, $noMesin, $noPlat, $namaPemilik, $statusPilih, $jenisVehicle);
+                    $stmt_insert->bind_param("sssssssss", $adminId, $userId, $noRangka, $noMesin, $noPlat, $namaPemilik, $statusPilih, $jenisVehicle, $tipeVehicle);
                     $stmt_insert->execute();
                     $stmt_insert->close();
                 }
@@ -472,6 +473,21 @@
                                                             ?>
                                                         </span></span></span></span>
                                                     </h6>
+                                                    <h6>
+                                                        Kind of Vehicle <span class="ps-5"><span class="ps-5"><span class="ps-3"><span class="ps-1">: 
+                                                        <?php
+                                                        if($row1['tipeKendaraan'] == 'MOTOR'){
+                                                            ?>
+                                                            MOTORCYCLE
+                                                            <?php
+                                                        } elseif($row1['tipeKendaraan'] == 'MOBIL'){
+                                                            ?>
+                                                            CAR
+                                                            <?php
+                                                        }   
+                                                            ?>
+                                                        </span></span></span></span>
+                                                    </h6>
                                                     <?php
                                                 }
                                             }
@@ -714,6 +730,14 @@
                                             <option value="DINAS">Official Vehicle</option>
                                             <option value="KHUSUS">Special Vehicle</option>
                                             <option value="LISTRIK">Electric Vehicle</option>                
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label for="tipeVehicle" class="form-label">Kind of Vehicle<span style="color: red;">*</span></label>
+                                        <select class="form-select" id="tipeVehicle" name="tipeVehicle" required>
+                                            <option value="">Select kind of Vehicle</option>
+                                            <option value="MOTOR">Motorcycle</option>
+                                            <option value="MOBIL">Car</option>
                                         </select>
                                     </div>
                                     <button type="submit" class="btn btn-primary" name="submit">Add Data Vehicle</button>
