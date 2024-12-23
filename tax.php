@@ -583,7 +583,23 @@
                                 </div>
 
                                 <div class="bg-light p-4 rounded border">
-                                    <h5></h5>
+                                    <?php 
+                                    $queryPay = "SELECT * FROM tax";
+                                    $stmtPay = $conn->prepare($queryPay);
+                                    $stmtPay->execute();
+                                    $resultPay = $stmtPay->get_result();
+
+                                    $queryCheck = "SELECT * FROM kendaraan";
+                                    $stmtCheck = $conn->prepare($queryCheck);
+                                    $stmtCheck->execute();
+                                    $resultCheck = $stmtCheck->get_result();
+
+                                    if($resultPay->num_rows > 0) {
+                                        while ($row = $resultPay->fetch_assoc()) {
+                                            
+                                        }
+                                    }
+                                    ?> 
                                 </div>
                                 <div class="d-flex justify-content-between mt-3">
                                     <!-- Previous Button (kiri) -->

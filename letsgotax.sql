@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 23, 2024 at 12:46 AM
+-- Generation Time: Dec 23, 2024 at 10:57 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -122,15 +122,16 @@ CREATE TABLE `kendaraan` (
   `adminId` int(11) NOT NULL,
   `namaPemilik` varchar(255) NOT NULL,
   `statusPilih` enum('SELECTED','UNSELECTED') NOT NULL,
-  `jenisKendaraan` enum('PRIBADI','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL
+  `jenisKendaraan` enum('PRIBADI','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL,
+  `tipeKendaraan` enum('MOTOR','MOBIL') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `kendaraan`
 --
 
-INSERT INTO `kendaraan` (`id_kendaraan`, `No_Rangka`, `No_Mesin`, `No_Plat`, `akunId`, `adminId`, `namaPemilik`, `statusPilih`, `jenisKendaraan`) VALUES
-(0, 'SL4YF0R3V4R', 'SL4Y3V3RYD4Y', 'AB 2891 SL', 8, 1, 'Unity Lity', 'SELECTED', 'PRIBADI');
+INSERT INTO `kendaraan` (`id_kendaraan`, `No_Rangka`, `No_Mesin`, `No_Plat`, `akunId`, `adminId`, `namaPemilik`, `statusPilih`, `jenisKendaraan`, `tipeKendaraan`) VALUES
+(0, 'SL4YF0R3V4R', 'SL4Y3V3RYD4Y', 'AB 2891 SL', 8, 1, 'Unity Lity', 'SELECTED', 'PRIBADI', 'MOTOR');
 
 -- --------------------------------------------------------
 
@@ -230,6 +231,7 @@ CREATE TABLE `tax` (
   `namaLengkap` varchar(255) NOT NULL,
   `platKendaraan` varchar(255) NOT NULL,
   `jenisKendaraan` enum('PRIBADI','PRIBADI LAIN','UMUM','NIAGA','DINAS','KHUSUS','LISTRIK') NOT NULL,
+  `tipeKendaraan` enum('MOTOR','MOBIL') NOT NULL,
   `totalPajak` varchar(255) NOT NULL,
   `lastPay` varchar(255) NOT NULL,
   `status` enum('ON TIME','OVERDUE') NOT NULL,
@@ -241,9 +243,9 @@ CREATE TABLE `tax` (
 -- Dumping data for table `tax`
 --
 
-INSERT INTO `tax` (`taxId`, `adminId`, `namaLengkap`, `platKendaraan`, `jenisKendaraan`, `totalPajak`, `lastPay`, `status`, `dendaPajak`, `nextPay`) VALUES
-(2, 1, 'Aliya Hanifa', 'AB 2103 WS', 'PRIBADI', 'Rp. 254.000,-', '24-12-2023', 'ON TIME', 'Rp. 0,-', '24-12-2024'),
-(3, 1, 'Unity Lity ', 'AB 2891 SL', 'PRIBADI', 'Rp. 254.000,-', '25-12-2023', 'ON TIME', 'Rp. 0,-', '25-12-2024');
+INSERT INTO `tax` (`taxId`, `adminId`, `namaLengkap`, `platKendaraan`, `jenisKendaraan`, `tipeKendaraan`, `totalPajak`, `lastPay`, `status`, `dendaPajak`, `nextPay`) VALUES
+(2, 1, 'Aliya Hanifa', 'AB 2103 WS', 'PRIBADI', 'MOBIL', 'Rp. 254.000,-', '2023-12-24', 'ON TIME', 'Rp. 0,-', '2024-12-24'),
+(3, 1, 'Unity Lity ', 'AB 2891 SL', 'PRIBADI', 'MOTOR', 'Rp. 254.000,-', '2023-12-25', 'ON TIME', 'Rp. 0,-', '2024-12-25');
 
 -- --------------------------------------------------------
 
