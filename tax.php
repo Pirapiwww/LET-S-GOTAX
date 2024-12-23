@@ -378,6 +378,51 @@
                                         Current Address <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($alamatNow); ?></span>
                                     </h6>
                                 </div>
+                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded mt-4">
+                                <h5 class="mb-0">List Data Vehicle</h5>
+                            </div>
+                            
+                            <div class="container mt-2">
+                                <div class="overflow-auto" style="white-space: nowrap;">
+                                    <?php 
+                                        $queryVehicle = "SELECT * FROM kendaraan WHERE akunId = ?";
+                                        $stmtVehicle = $conn->prepare($queryVehicle);
+                                        $stmtVehicle->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
+                                        $stmtVehicle->execute();
+                                        $resultVehicle = $stmtVehicle->get_result();
+
+                                        if($resultVehicle->num_rows > 0) {
+                                            while ($row = $resultVehicle->fetch_assoc()) {
+                                                if($row['statusPilih'] == 'SELECTED'){
+                                                    ?> 
+                                                    <div class="d-inline-block me-3">
+                                                        <div class="card" style="width: 18rem;">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
+                                                                <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
+                                                                <p class="badge bg-success">Selected</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <?php
+                                                } else {
+                                                    ?>
+                                                    <div class="d-inline-block me-3">
+                                                        <div class="card" style="width: 18rem;">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
+                                                                <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
+                                                                <a href="tax.php?page=vehicle&select=<?php echo $row['akunId']; ?>&vehicle_id=<?php echo $row['id_kendaraan']; ?>" class="btn btn-primary select-btn">Select</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <?php
+                                                }
+                                            }
+                                        } 
+                                    ?>
+                                </div>
+                            </div>
                                 <!-- Navigation Buttons -->
                                 <div class="d-flex justify-content-end mt-3">
                                     <!-- Next Button -->
@@ -719,52 +764,6 @@
                                     </div>
                                     <button type="submit" class="btn btn-primary" name="submit">Add Data Vehicle</button>
                                 </form>
-                            </div>
-
-                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded mt-2">
-                                <h5 class="mb-0">List Data Vehicle</h5>
-                            </div>
-                            
-                            <div class="container mt-2">
-                                <div class="overflow-auto" style="white-space: nowrap;">
-                                <?php 
-                                    $queryVehicle = "SELECT * FROM kendaraan WHERE akunId = ?";
-                                    $stmtVehicle = $conn->prepare($queryVehicle);
-                                    $stmtVehicle->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
-                                    $stmtVehicle->execute();
-                                    $resultVehicle = $stmtVehicle->get_result();
-
-                                    if($resultVehicle->num_rows > 0) {
-                                        while ($row = $resultVehicle->fetch_assoc()) {
-                                            if($row['statusPilih'] == 'SELECTED'){
-                                                ?> 
-                                                <div class="d-inline-block me-3">
-                                                    <div class="card" style="width: 18rem;">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
-                                                            <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
-                                                            <p class="badge bg-success">Selected</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <?php
-                                            } else {
-                                                ?>
-                                                <div class="d-inline-block me-3">
-                                                    <div class="card" style="width: 18rem;">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
-                                                            <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
-                                                            <a href="tax.php?page=vehicle&select=<?php echo $row['akunId']; ?>&vehicle_id=<?php echo $row['id_kendaraan']; ?>" class="btn btn-primary select-btn">Select</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <?php
-                                            }
-                                        }
-                                    } 
-                                ?>
-                                </div>
                             </div>
                         </div>
 

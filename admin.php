@@ -906,7 +906,7 @@ if ($isLoggedIn) {
                                                     <div class="mb-3">
                                                         <label for="lastPay" class="form-label">Latest Payment Date<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="lastPay" name="lastPay" placeholder="Enter Latest Payment Date" required>
-                                                        <small id="numberHelp" class="form-text text-muted">Format : dd-mm-yyyy</small>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : YYYY-MM-DD</small>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label for="dendaPajak" class="form-label">Tax Fine<span style="color: red;">*</span></label>
@@ -924,7 +924,7 @@ if ($isLoggedIn) {
                                                     <div class="mb-3">
                                                         <label for="nextPay" class="form-label">Next Payment Date<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="nextPay" name="nextPay" placeholder="EnterNext Payment Date" required>
-                                                        <small id="numberHelp" class="form-text text-muted">Format : dd-mm-yyyy</small>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : YYYY-MM-DD</small>
                                                     </div>
                                                     <button type="submit" class="btn btn-primary" name="submit">Add Data</button>
                                                 </form>
