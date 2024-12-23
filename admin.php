@@ -176,65 +176,126 @@ if ($isLoggedIn) {
         }
 
         // ** Bagian untuk add data tax **
-        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax']) && isset($_POST['lastPay']) && isset($_POST['statusPajak']) && isset($_POST['dendaPajak']) && isset($_POST['nextPay']) && isset($_POST['jenisKendaraan']) && isset($_POST['tipeKendaraan'])) {
+        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['pkb']) && isset($_POST['lastPay']) && isset($_POST['statusPajak']) && isset($_POST['dendaPajak']) && isset($_POST['nextPay']) && isset($_POST['jenisKendaraan']) && isset($_POST['tipeKendaraan'])) {
+            // Mengambil data dari POST
             $namaTax = $_POST['namaTax'] ?? null;
             $plat = $_POST['plat'] ?? null;
-            $totalTax = $_POST['totalTax'] ?? null;
+            $PKB = $_POST['pkb'] ?? null;
             $statusPajak = $_POST['statusPajak'] ?? null;
             $dendaPajak = $_POST['dendaPajak'] ?? null;
             $lastPay = $_POST['lastPay'] ?? null;
             $nextPay = $_POST['nextPay'] ?? null;
             $jenisKendaraan = $_POST['jenisKendaraan'] ?? null;
             $tipeKendaraan = $_POST['tipeKendaraan'] ?? null;
-        
+            
+            // Bersihkan nilai PKB dan dendaPajak dari karakter non-angka
+            $PKB_clean = preg_replace('/[^0-9]/', '', $PKB);
+            $dendaPajak_clean = preg_replace('/[^0-9]/', '', $dendaPajak);
+
+            // Inisialisasi SWDKLLJ berdasarkan jenis kendaraan
+            $SWDKLLJ = '';
+            $SWDKLLJ_clean = '';
+            if ($tipeKendaraan == 'MOTOR') {
+                $SWDKLLJ = 'Rp. 32.000,-';
+                $SWDKLLJ_clean = preg_replace('/[^0-9]/', '', $SWDKLLJ);
+            } elseif ($tipeKendaraan == 'MOBIL') {
+                $SWDKLLJ = 'Rp. 100.000,-';
+                $SWDKLLJ_clean = preg_replace('/[^0-9]/', '', $SWDKLLJ);
+            }
+
             // Validasi input
             if (empty($plat) || empty($namaTax)) {
                 echo "Plat Kendaraan dan Nama Pajak wajib diisi!";
                 exit;
             }
-        
+            
+            // Validasi input
+            if (empty($plat)) {
+                $error = 'Vehicle Plat is required!';
+            } elseif (empty($namaTax)) {
+                $error = 'Tax Name is required!';
+            } elseif (empty($PKB)) {
+                $error = 'PKB is required!';
+            } elseif (empty($statusPajak)) {
+                $error = 'Tax Status is required!';
+            } elseif (empty($dendaPajak)) {
+                $error = 'Tax Fine is required!';
+            } elseif (empty($lastPay)) {
+                $error = 'Last Payment Date is required!';
+            } elseif (empty($nextPay)) {
+                $error = 'Next Payment Date is required!';
+            }
+
+            // Validasi format Plat Kendaraan (contoh format XX YYYY XX)
+            $platPattern = '/^[A-Z]{2}\s\d{4}\s[A-Z]{2}$/';
+            if (!empty($plat) && !preg_match($platPattern, $plat)) {
+                $error = 'Vehicle Plat format is incorrect. It should follow the format XX YYYY XX (uppercase).';
+            }
+
+            // Validasi format uang (PKB dan Denda Pajak)
+            $moneyPattern = '/^Rp\.\s?\d{1,3}(\.\d{3})*(,-)$/';
+            if (!empty($PKB) && !preg_match($moneyPattern, $PKB)) {
+                $error = 'PKB format is incorrect. It should follow the format Rp. xxx.xxx,-';
+            }
+            if (!empty($dendaPajak) && !preg_match($moneyPattern, $dendaPajak)) {
+                $error = 'Tax Fine format is incorrect. It should follow the format Rp. xxx.xxx,-';
+            }
+
             // Periksa apakah data pajak dengan plat kendaraan yang sama sudah ada
             $sql_check = "SELECT * FROM tax WHERE platKendaraan = ?";
             $stmt_check = $conn->prepare($sql_check);
             $stmt_check->bind_param("s", $plat);
             $stmt_check->execute();
             $result_check = $stmt_check->get_result();
-        
+
             if ($result_check->num_rows > 0) {
                 // Jika data pajak dengan plat kendaraan yang sama sudah ada
                 echo "Data tax dengan plat kendaraan ini sudah terdaftar!";
             } else {
+                // Hitung total pajak
+                $totalTax_clean = $SWDKLLJ_clean + $PKB_clean + $dendaPajak_clean;
+                $totalTax = "Rp. " . number_format($totalTax_clean, 0, ',', '.') . ",-";
+
                 // Masukkan data baru ke tabel tax
-                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, nextPay, jenisKendaraan, tipeKendaraan) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, nextPay, jenisKendaraan, tipeKendaraan, PKB, SWDKLLJ) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
+
                 if ($stmt_insert) {
+                    // Bind parameter dengan tipe yang sesuai
                     $stmt_insert->bind_param(
-                        "isssssssss", 
-                        $userId, 
-                        $namaTax, 
-                        $plat, 
-                        $totalTax, 
-                        $lastPay, 
-                        $statusPajak, 
-                        $dendaPajak, 
-                        $nextPay, 
-                        $jenisKendaraan,
-                        $tipeKendaraan
+                        "issssssssss", // tipe data parameter
+                        $userId,       // adminId
+                        $namaTax,      // namaLengkap
+                        $plat,         // platKendaraan
+                        $totalTax,     // totalPajak
+                        $lastPay,      // lastPay
+                        $statusPajak,  // status
+                        $dendaPajak,   // dendaPajak
+                        $nextPay,      // nextPay
+                        $jenisKendaraan, // jenisKendaraan
+                        $tipeKendaraan,  // tipeKendaraan
+                        $PKB,          // PKB
+                        $SWDKLLJ       // SWDKLLJ
                     );
-                    $stmt_insert->execute();
-                    echo "Data tax berhasil ditambahkan!";
+                    
+                    // Eksekusi query insert
+                    if ($stmt_insert->execute()) {
+                        echo "Data tax berhasil ditambahkan!";
+                    } else {
+                        echo "Gagal menambahkan data: " . $stmt_insert->error;
+                    }
+
+                    // Tutup statement insert
                     $stmt_insert->close();
                 } else {
                     echo "Gagal menyiapkan query insert: " . $conn->error;
                 }
             }
-        
+
             // Menutup statement cek setelah selesai
             $stmt_check->close();
         }
-        
-        
 
         // ** Bagian untuk Update Foto Profil **
         if (isset($_FILES['newProfile']) && $_FILES['newProfile']['error'] == 0) {
@@ -911,8 +972,8 @@ if ($isLoggedIn) {
                                                         </select>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label for="totalTax" class="form-label">Total Tax<span style="color: red;">*</span></label>
-                                                        <input type="text" class="form-control" id="totalTax" name="totalTax" placeholder="Enter Total Tax" required>
+                                                        <label for="pkb" class="form-label">PKB VALUE<span style="color: red;">*</span></label>
+                                                        <input type="text" class="form-control" id="pkb" name="pkb" placeholder="Enter Total Tax" required>
                                                         <small id="numberHelp" class="form-text text-muted">Format : Rp. xxx.xxx,-</small>
                                                     </div>
                                                     <div class="mb-3">
@@ -953,10 +1014,12 @@ if ($isLoggedIn) {
                                         <th>Vehicle Type</th>
                                         <th>Kind of Vehicle</th>
                                         <th>Full Name</th>
-                                        <th>Total Tax</th>
-                                        <th>Latest Payment</th>
+                                        <th>PKB</th>
+                                        <th>SWDKLLJ</th>
                                         <th>Tax Fine</th>
+                                        <th>Total Tax</th>
                                         <th>Tax Status</th>
+                                        <th>Latest Payment</th>
                                         <th>Next Payment</th>
                                     </tr>
                                 </thead>
@@ -977,10 +1040,12 @@ if ($isLoggedIn) {
                                                     <td><?php echo htmlspecialchars($row['jenisKendaraan']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['tipeKendaraan']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['namaLengkap']); ?></td>
-                                                    <td><?php echo htmlspecialchars($row['totalPajak']); ?></td>
-                                                    <td><?php echo htmlspecialchars($row['lastPay']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['PKB']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['SWDKLLJ']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['dendaPajak']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['totalPajak']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['status']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['lastPay']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['nextPay']); ?></td>
                                                     
                                                 </tr>
@@ -1087,10 +1152,10 @@ if ($isLoggedIn) {
                                     <tbody>
                                         <?php
                                         $query = "SELECT p.*, a.username, ph.type, ph.transactionDate 
-                                                 FROM point p 
-                                                 JOIN akun a ON p.akunId = a.akunId
-                                                 LEFT JOIN point_history ph ON p.akunId = ph.akunId
-                                                 ORDER BY ph.transactionDate DESC";
+                                                FROM point p 
+                                                JOIN akun a ON p.akunId = a.akunId
+                                                LEFT JOIN point_history ph ON p.akunId = ph.akunId
+                                                ORDER BY ph.transactionDate DESC";
                                         $result = $conn->query($query);
                                         $no = 1;
                                         
