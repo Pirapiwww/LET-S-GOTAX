@@ -530,7 +530,7 @@
                                                             <div class="card-body">
                                                                 <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
                                                                 <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
-                                                                <a href="tax.php?page=vehicle&select=<?php echo $row['akunId']; ?>&vehicle_id=<?php echo $row['id_kendaraan']; ?>" class="btn btn-primary select-btn">Select</a>
+                                                                <a href="tax.php?page=personal&select=<?php echo $row['akunId']; ?>&vehicle_id=<?php echo $row['id_kendaraan']; ?>" class="btn btn-primary select-btn">Select</a>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -674,7 +674,7 @@
                                                 if($row['statusPilih'] == 'SELECTED'){
                                                     ?>
                                                     <!-- Tombol Next untuk melanjutkan ke tax.php dengan plat kendaraan yang dipilih -->
-                                                    <a href="tax.php?page=<?= $page ?>&subPage=tax&taxCheck=<?= $row['No_Plat']; ?>" class="btn btn-dark ms-auto">
+                                                    <a href="tax.php?page=pay&subPage=taxPay&taxCheck=<?= $row['No_Plat']; ?>" class="btn btn-dark ms-auto">
                                                         Next <span class="ms-2">&rarr;</span>
                                                     </a>
                                                     <?php
@@ -684,7 +684,7 @@
                                     ?>
                                 </div>
                         <?php
-                    } elseif ($subPage == 'tax'){
+                    } elseif ($subPage == 'taxPay'){
                         ?>
                         <!-- Main Content -->
                         <main class="col-md-10 ms-sm-auto px-md-4">
@@ -843,7 +843,7 @@
                                 </div>
                                 <div class="d-flex justify-content-between mt-3">
                                     <!-- Previous Button (kiri) -->
-                                    <a href="tax.php?page=<?= $page ?>&subPage=tax" class="btn btn-dark"><span class="ms-2">&larr;</span> Previous</a>
+                                    <a href="tax.php?page=<?= $page ?>&subPage=taxPay" class="btn btn-dark"><span class="ms-2">&larr;</span> Previous</a>
 
                                     <!-- Next Button (kanan) -->
                                     <a href="tax.php?page=<?= $page ?>&subPage=receipt" class="btn btn-dark ms-auto">Pay Tax <span class="ms-2">&rarr;</span></a>
