@@ -660,25 +660,29 @@
                                     <!-- Previous Button (kiri) -->
                                     <a href="tax.php?page=<?= $page ?>&subPage=personal" class="btn btn-dark"><span class="ms-2">&larr;</span> Previous</a>
                                     <?php 
+                                        // Cek kendaraan berdasarkan akunId
                                         $queryCheck1 = "SELECT * FROM kendaraan WHERE akunId = ?";
                                         $stmtCheck1 = $conn->prepare($queryCheck1);
-                                        $stmtCheck1->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
+                                        $stmtCheck1->bind_param('i', $userId);  // Menggunakan userId dari sesi atau admin
                                         $stmtCheck1->execute();
                                         $resultCheck1 = $stmtCheck1->get_result();
 
+                                        // Cek jika ada kendaraan yang memiliki status 'SELECTED'
                                         if($resultCheck1->num_rows > 0) {
                                             while ($row = $resultCheck1->fetch_assoc()) {
+                                                // Hanya tampilkan tombol Next jika statusPilih = 'SELECTED'
                                                 if($row['statusPilih'] == 'SELECTED'){
                                                     ?>
-                                                    <!-- Next Button (kanan) -->
-                                                    <a href="tax.php?page=<?= $page ?>&subPage=tax&taxCheck=<?php echo $row['No_Plat']; ?>" class="btn btn-dark ms-auto">Next <span class="ms-2">&rarr;</span></a>
+                                                    <!-- Tombol Next untuk melanjutkan ke tax.php dengan plat kendaraan yang dipilih -->
+                                                    <a href="tax.php?page=<?= $page ?>&subPage=tax&taxCheck=<?= $row['No_Plat']; ?>" class="btn btn-dark ms-auto">
+                                                        Next <span class="ms-2">&rarr;</span>
+                                                    </a>
                                                     <?php
                                                 }
                                             }
                                         }
                                     ?>
                                 </div>
-
                         <?php
                     } elseif ($subPage == 'tax'){
                         ?>
@@ -720,48 +724,51 @@
                                 </div>
 
                                 <div class="bg-light p-4 rounded border">
-                                    <h5></h5>
-                                    <?php 
-                                        $queryVehicle1 = "SELECT * FROM kendaraan WHERE akunId = ?";
-                                        $stmtVehicle1 = $conn->prepare($queryVehicle1);
-                                        $stmtVehicle1->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
-                                        $stmtVehicle1->execute();
-                                        $resultVehicle1 = $stmtVehicle1->get_result();
-                                        
-                                        $queryTax = "SELECT * FROM tax";
-                                        $stmtTax = $conn->prepare($queryTax);
-                                        $stmtTax->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
-                                        $stmtTax->execute();
-                                        $resultTax = $stmtTax->get_result();
+                                    <?php
+                                        // Query untuk mendapatkan data kendaraan yang dipilih dan pajaknya
+                                        $query = "
+                                            SELECT kendaraan.namaPemilik, kendaraan.No_Plat, tax.PKB, tax.SWDKLLJ
+                                            FROM kendaraan
+                                            JOIN tax ON kendaraan.No_Plat = tax.platKendaraan
+                                            WHERE kendaraan.akunId = ? AND kendaraan.statusPilih = 'SELECTED'
+                                        ";
+                                        $stmt = $conn->prepare($query);
+                                        $stmt->bind_param('i', $userId);  // Menggunakan userId dari sesi atau admin
+                                        $stmt->execute();
+                                        $result = $stmt->get_result();
 
-                                        if($resultVehicle1->num_rows > 0) {
-                                            while ($row1 = $resultVehicle1->fetch_assoc()) {
-                                                if($resultTax->num_rows > 0) {
-                                                    while ($rowTax = $resultTax->fetch_assoc()) {
-                                                        if($row1['statusPilih'] == 'SELECTED' && $rowTax['platKendaraan'] == $row1['No_Plat']){
-                                                            ?>
-                                                            <h6>
-                                                                Vehicle Owner Name <span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($row1['namaPemilik']); ?></span></span>
-                                                            </h6>
-                                                            <h6>
-                                                                Vehicle Plat Number <span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($row1['No_Plat']); ?></span></span>
-                                                            </h6>
-                                                            <h6>
-                                                                Vehicle Plat Number <span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($row1['No_Plat']); ?></span></span>
-                                                            </h6>
-                                                            <h6>
-                                                                PKB Value <span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($rowTax['PKB']); ?></span></span>
-                                                            </h6>
-                                                            <h6>
-                                                                SWDKLLJ Value <span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($rowTax['SWDKLLJ']); ?></span></span>
-                                                            </h6>
-                                                            <?php
-                                                        }
-                                                    }
-                                                }
+                                        // Jika ada data yang sesuai
+                                        if($result->num_rows > 0) {
+                                            while ($row = $result->fetch_assoc()) {
+                                                ?>
+                                                <h6>
+                                                    Vehicle Owner Name <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($row['namaPemilik']); ?></span></span>
+                                                </h6>
+                                                <h6>
+                                                    Vehicle Plat Number <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($row['No_Plat']); ?></span></span>
+                                                </h6>
+                                                <h6>
+                                                    PKB Value <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($row['PKB']); ?></span></span>
+                                                </h6>
+                                                <h6>
+                                                    SWDKLLJ Value <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($row['SWDKLLJ']); ?></span></span>
+                                                </h6>
+                                                <h6>
+                                                    Status <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($row['status']); ?></span></span>
+                                                </h6>
+                                                <h6>
+                                                    Total Fine Tax <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($row['dendaPajak']); ?></span></span>
+                                                </h6>
+                                                <h6>
+                                                    Total Tax Payment<span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($row['totalPajak']); ?></span></span>
+                                                </h6>
+                                                <?php
                                             }
+                                        } else {
+                                            // Jika tidak ada data yang cocok, tampilkan pesan
+                                            echo "No data found for the selected vehicle.";
                                         }
-                                                    ?>
+                                    ?>
                                 </div>
                                 <div class="d-flex justify-content-between mt-3">
                                     <!-- Previous Button (kiri) -->
