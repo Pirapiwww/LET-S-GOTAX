@@ -378,6 +378,51 @@
                                         Current Address <span class="ps-5"><span class="ps-1">: <?php echo htmlspecialchars($alamatNow); ?></span>
                                     </h6>
                                 </div>
+                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded mt-4">
+                                <h5 class="mb-0">List Data Vehicle</h5>
+                            </div>
+                            
+                            <div class="container mt-2">
+                                <div class="overflow-auto" style="white-space: nowrap;">
+                                    <?php 
+                                        $queryVehicle = "SELECT * FROM kendaraan WHERE akunId = ?";
+                                        $stmtVehicle = $conn->prepare($queryVehicle);
+                                        $stmtVehicle->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
+                                        $stmtVehicle->execute();
+                                        $resultVehicle = $stmtVehicle->get_result();
+
+                                        if($resultVehicle->num_rows > 0) {
+                                            while ($row = $resultVehicle->fetch_assoc()) {
+                                                if($row['statusPilih'] == 'SELECTED'){
+                                                    ?> 
+                                                    <div class="d-inline-block me-3">
+                                                        <div class="card" style="width: 18rem;">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
+                                                                <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
+                                                                <p class="badge bg-success">Selected</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <?php
+                                                } else {
+                                                    ?>
+                                                    <div class="d-inline-block me-3">
+                                                        <div class="card" style="width: 18rem;">
+                                                            <div class="card-body">
+                                                                <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
+                                                                <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
+                                                                <a href="tax.php?page=vehicle&select=<?php echo $row['akunId']; ?>&vehicle_id=<?php echo $row['id_kendaraan']; ?>" class="btn btn-primary select-btn">Select</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <?php
+                                                }
+                                            }
+                                        } 
+                                    ?>
+                                </div>
+                            </div>
                                 <!-- Navigation Buttons -->
                                 <div class="d-flex justify-content-end mt-3">
                                     <!-- Next Button -->
@@ -418,74 +463,91 @@
                                     <h5 class="mb-0">Vehicle Detail</h5>
                                 </div>
                                 <div class="bg-light p-4 rounded border">
-                                    <?php 
-                                        $queryVehicle1 = "SELECT * FROM kendaraan WHERE akunId = ?";
-                                        $stmtVehicle1 = $conn->prepare($queryVehicle1);
-                                        $stmtVehicle1->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
-                                        $stmtVehicle1->execute();
-                                        $resultVehicle1 = $stmtVehicle1->get_result();
+                                <?php 
+                                    $queryVehicle1 = "SELECT * FROM kendaraan WHERE akunId = ?";
+                                    $stmtVehicle1 = $conn->prepare($queryVehicle1);
+                                    $stmtVehicle1->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
+                                    $stmtVehicle1->execute();
+                                    $resultVehicle1 = $stmtVehicle1->get_result();
 
-                                        if($resultVehicle1->num_rows > 0) {
-                                            while ($row1 = $resultVehicle1->fetch_assoc()) {
-                                                if($row1['statusPilih'] == 'SELECTED'){
-                                                    ?>
-                                                    <h6>
-                                                        Vehicle Owner Name <span class="ps-5"><span class="ps-1"> : <?php echo htmlspecialchars($row1['namaPemilik']); ?></span></span>
-                                                    </h6>
-                                                    <h6>
-                                                        Vehicle Plat Number<span class="ps-5"><span class="ps-2"> : <?php echo htmlspecialchars($row1['No_Plat']); ?></span></span>
-                                                    </h6>
-                                                    <h6>
-                                                        Vehicle Chassis Number<span class="ps-4"><span class="ps-2"> : <?php echo htmlspecialchars($row1['No_Rangka']); ?></span></span>
-                                                    </h6>
-                                                    <h6>
-                                                        Vehicle Engine Number <span class="ps-3"><span class="ps-3"><span class="ps-1"> : <?php echo htmlspecialchars($row1['No_Mesin']); ?></span></span></span>
-                                                    </h6>
-                                                    <h6>
-                                                        Vehicle Type <span class="ps-5"><span class="ps-5"><span class="ps-3"><span class="ps-1">: 
-                                                        <?php
-                                                        if($row1['jenisKendaraan'] == 'PRIBADI'){
-                                                            ?>
-                                                            PRIVATE VEHICLE
-                                                            <?php
-                                                        } elseif($row1['jenisKendaraan'] == 'UMUM'){
-                                                            ?>
-                                                            PUBLIC VEHICLE
-                                                            <?php
-                                                        } elseif($row1['jenisKendaraan'] == 'NIAGA'){
-                                                            ?>
-                                                            COMMERCIAL VEHICLE
-                                                            <?php
-                                                        } elseif($row1['jenisKendaraan'] == 'DINAS'){
-                                                            ?>
-                                                            OFFICIAL VEHICLE
-                                                            <?php
-                                                        } elseif($row1['jenisKendaraan'] == 'KHUSUS'){
-                                                            ?>
-                                                            SPECIAL VEHICLE
-                                                            <?php
-                                                        } elseif($row1['jenisKendaraan'] == 'LISTRIK'){
-                                                            ?>
-                                                            ELECTRIC VEHICLE
-                                                            <?php
-                                                        }   
-                                                            ?>
-                                                        </span></span></span></span>
-                                                    </h6>
+                                    if ($resultVehicle1->num_rows > 0) {
+                                        $foundSelected = false; // Untuk cek jika ada kendaraan dengan status SELECTED
+                                        while ($row1 = $resultVehicle1->fetch_assoc()) {
+                                            if ($row1['statusPilih'] == 'SELECTED') {
+                                                $foundSelected = true;
+                                                ?>
+                                                <h6>Vehicle Owner Name: <?php echo htmlspecialchars($row1['namaPemilik']); ?></h6>
+                                                <h6>Vehicle Plat Number: <?php echo htmlspecialchars($row1['No_Plat']); ?></h6>
+                                                <h6>Vehicle Chassis Number: <?php echo htmlspecialchars($row1['No_Rangka']); ?></h6>
+                                                <h6>Vehicle Engine Number: <?php echo htmlspecialchars($row1['No_Mesin']); ?></h6>
+                                                <h6>
+                                                    Vehicle Type: 
                                                     <?php
-                                                }
+                                                    switch ($row1['jenisKendaraan']) {
+                                                        case 'PRIBADI':
+                                                            echo 'PRIVATE VEHICLE';
+                                                            break;
+                                                        case 'UMUM':
+                                                            echo 'PUBLIC VEHICLE';
+                                                            break;
+                                                        case 'NIAGA':
+                                                            echo 'COMMERCIAL VEHICLE';
+                                                            break;
+                                                        case 'DINAS':
+                                                            echo 'OFFICIAL VEHICLE';
+                                                            break;
+                                                        case 'KHUSUS':
+                                                            echo 'SPECIAL VEHICLE';
+                                                            break;
+                                                        case 'LISTRIK':
+                                                            echo 'ELECTRIC VEHICLE';
+                                                            break;
+                                                        default:
+                                                            echo 'UNKNOWN VEHICLE TYPE';
+                                                            break;
+                                                        }
+                                                    ?>
+                                                </h6>
+                                                <?php
                                             }
                                         }
-                                    ?> 
+                                        // Jika tidak ada kendaraan dengan status SELECTED
+                                        if (!$foundSelected) {
+                                            echo '<h6 class="text-danger">No vehicle with status SELECTED found.</h6>';
+                                        }
+                                    } else {
+                                        echo '<h6 class="text-danger">No vehicle data available.</h6>';
+                                    }
+                                    ?>
+
                                 </div>
                                 <div class="d-flex justify-content-between mt-3">
                                     <!-- Previous Button (kiri) -->
                                     <a href="tax.php?page=<?= $page ?>&subPage=personal" class="btn btn-dark"><span class="ms-2">&larr;</span> Previous</a>
+                                    
+                                    <?php 
+                                        $queryVehicle2 = "SELECT * FROM kendaraan WHERE akunId = ?";
+                                        $stmtVehicle2 = $conn->prepare($queryVehicle2);
+                                        $stmtVehicle2->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
+                                        $stmtVehicle2->execute();
+                                        $resultVehicle2 = $stmtVehicle2->get_result();
 
-                                    <!-- Next Button (kanan) -->
-                                    <a href="tax.php?page=<?= $page ?>&subPage=tax" class="btn btn-dark ms-auto">Next <span class="ms-2">&rarr;</span></a>
+                                        if($resultVehicle2->num_rows > 0) {
+                                            while ($row2 = $resultVehicle2->fetch_assoc()) {
+                                                if($row2['statusPilih'] == 'SELECTED'){
+                                                    ?>
+                                                    <!-- Next Button (kanan) -->
+                                                    <a href="tax.php?page=<?= $page ?>&subPage=tax" class="btn btn-dark ms-auto">Next <span class="ms-2">&rarr;</span></a>
+                                                    <?php
+                                                } else {
+                                                    $error = 'Silahkan pilih data vehicle terlebih dahulu';
+                                                }
+                                            }
+                                        } else {
+                                            $error = 'Belum ada data vehicle yang tersimpan, buatlah di segmen "Add Vehicle"';
+                                        }
+                                        ?>
                                 </div>
-
                         <?php
                     } elseif ($subPage == 'tax'){
                         ?>
@@ -702,52 +764,6 @@
                                     </div>
                                     <button type="submit" class="btn btn-primary" name="submit">Add Data Vehicle</button>
                                 </form>
-                            </div>
-
-                            <div class="bg-warning text-dark py-2 px-3 mb-4 rounded mt-2">
-                                <h5 class="mb-0">List Data Vehicle</h5>
-                            </div>
-                            
-                            <div class="container mt-2">
-                                <div class="overflow-auto" style="white-space: nowrap;">
-                                <?php 
-                                    $queryVehicle = "SELECT * FROM kendaraan WHERE akunId = ?";
-                                    $stmtVehicle = $conn->prepare($queryVehicle);
-                                    $stmtVehicle->bind_param('i', $userId);  // Ganti dengan userId dari sesi atau admin
-                                    $stmtVehicle->execute();
-                                    $resultVehicle = $stmtVehicle->get_result();
-
-                                    if($resultVehicle->num_rows > 0) {
-                                        while ($row = $resultVehicle->fetch_assoc()) {
-                                            if($row['statusPilih'] == 'SELECTED'){
-                                                ?> 
-                                                <div class="d-inline-block me-3">
-                                                    <div class="card" style="width: 18rem;">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
-                                                            <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
-                                                            <p class="badge bg-success">Selected</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <?php
-                                            } else {
-                                                ?>
-                                                <div class="d-inline-block me-3">
-                                                    <div class="card" style="width: 18rem;">
-                                                        <div class="card-body">
-                                                            <h5 class="card-title">Owner Name : <?php echo htmlspecialchars($row['namaPemilik']); ?></h5>
-                                                            <p class="card-text">Plat : <?php echo htmlspecialchars($row['No_Plat']); ?></p>
-                                                            <a href="tax.php?page=vehicle&select=<?php echo $row['akunId']; ?>&vehicle_id=<?php echo $row['id_kendaraan']; ?>" class="btn btn-primary select-btn">Select</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <?php
-                                            }
-                                        }
-                                    } 
-                                ?>
-                                </div>
                             </div>
                         </div>
 

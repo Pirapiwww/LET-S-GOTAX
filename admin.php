@@ -14,7 +14,7 @@ session_start();
 include 'config.php';
 
 // Periksa apakah pengguna sudah login
-$isLoggedIn = isset($_SESSION['user_id']);
+$isLoggedIn = isset($_SESSION['admin_id']);
 
 //column tabel Admin
 $userPhoto = '';
@@ -116,7 +116,7 @@ if ($isLoggedIn) {
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Inisialisasi user ID
-        $userId = $_SESSION['user_id'];
+        $userId = $_SESSION['admin_id'];
 
         // Memproses perubahan adminId untuk setiap akun
         foreach ($_POST as $key => $value) {
@@ -185,28 +185,53 @@ if ($isLoggedIn) {
             $lastPay = $_POST['lastPay'] ?? null;
             $nextPay = $_POST['nextPay'] ?? null;
             $jenisKendaraan = $_POST['jenisKendaraan'] ?? null;
-
-            // Cek apakah email atau username sudah terdaftar
-            $sql_check = "SELECT * FROM tax";
+        
+            // Validasi input
+            if (empty($plat) || empty($namaTax)) {
+                echo "Plat Kendaraan dan Nama Pajak wajib diisi!";
+                exit;
+            }
+        
+            // Periksa apakah data pajak dengan plat kendaraan yang sama sudah ada
+            $sql_check = "SELECT * FROM tax WHERE platKendaraan = ?";
             $stmt_check = $conn->prepare($sql_check);
+            $stmt_check->bind_param("s", $plat);
             $stmt_check->execute();
             $result_check = $stmt_check->get_result();
         
             if ($result_check->num_rows > 0) {
-                // Jika email atau username sudah terdaftar
-                $error = "Data tax sudah terdaftar!";
+                // Jika data pajak dengan plat kendaraan yang sama sudah ada
+                echo "Data tax dengan plat kendaraan ini sudah terdaftar!";
             } else {
-                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, jenisKendaraan) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                // Masukkan data baru ke tabel tax
+                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, nextPay, jenisKendaraan) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
-                $stmt_insert->bind_param("sssssssss", $userId, $namaTax, $plat, $totalTax, $lastPay, $statusPajak, $dendaPajak, $nextPay, $jenisKendaraan);
-                $stmt_insert->execute();
-                
-                $stmt_insert->close();
+                if ($stmt_insert) {
+                    $stmt_insert->bind_param(
+                        "issssssss", 
+                        $userId, 
+                        $namaTax, 
+                        $plat, 
+                        $totalTax, 
+                        $lastPay, 
+                        $statusPajak, 
+                        $dendaPajak, 
+                        $nextPay, 
+                        $jenisKendaraan
+                    );
+                    $stmt_insert->execute();
+                    echo "Data tax berhasil ditambahkan!";
+                    $stmt_insert->close();
+                } else {
+                    echo "Gagal menyiapkan query insert: " . $conn->error;
+                }
             }
         
             // Menutup statement cek setelah selesai
             $stmt_check->close();
         }
+        
         
 
         // ** Bagian untuk Update Foto Profil **
@@ -328,7 +353,7 @@ if ($isLoggedIn) {
                             <path d="M4 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0m10 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M6 8a1 1 0 0 0 0 2h4a1 1 0 1 0 0-2zM4.862 4.276 3.906 6.19a.51.51 0 0 0 .497.731c.91-.073 2.35-.17 3.597-.17s2.688.097 3.597.17a.51.51 0 0 0 .497-.731l-.956-1.913A.5.5 0 0 0 10.691 4H5.309a.5.5 0 0 0-.447.276"/>
                             <path d="M2.52 3.515A2.5 2.5 0 0 1 4.82 2h6.362c1 0 1.904.596 2.298 1.515l.792 1.848c.075.175.21.319.38.404.5.25.855.715.965 1.262l.335 1.679q.05.242.049.49v.413c0 .814-.39 1.543-1 1.997V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.338c-1.292.048-2.745.088-4 .088s-2.708-.04-4-.088V13.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-1.892c-.61-.454-1-1.183-1-1.997v-.413a2.5 2.5 0 0 1 .049-.49l.335-1.68c.11-.546.465-1.012.964-1.261a.8.8 0 0 0 .381-.404l.792-1.848ZM4.82 3a1.5 1.5 0 0 0-1.379.91l-.792 1.847a1.8 1.8 0 0 1-.853.904.8.8 0 0 0-.43.564L1.03 8.904a1.5 1.5 0 0 0-.03.294v.413c0 .796.62 1.448 1.408 1.484 1.555.07 3.786.155 5.592.155s4.037-.084 5.592-.155A1.48 1.48 0 0 0 15 9.611v-.413q0-.148-.03-.294l-.335-1.68a.8.8 0 0 0-.43-.563 1.8 1.8 0 0 1-.853-.904l-.792-1.848A1.5 1.5 0 0 0 11.18 3z"/>
                             </svg>
-                            Data Kendaraan
+                            Data Vehicle
                         </a>
                         <a href="admin.php?page=tax" class="<?= $page == 'tax' ? 'active' : '' ?>">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bank" viewBox="0 0 16 16">
@@ -749,7 +774,7 @@ if ($isLoggedIn) {
                     
                     <!-- Header -->
                     <div class="header d-flex justify-content-between align-items-center mb-4">
-                        <h4>Data Kendaraan</h4>
+                        <h4>Data Vehicle</h4>
                     </div>
 
                     <!-- Stats Section -->
@@ -761,18 +786,18 @@ if ($isLoggedIn) {
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <h5>Data Kendaraan</h5>
+                                <h5>Data Vehicle</h5>
                             </div>
                         </div>
                         <table class="table table-bordered align-middle" id="members-table">
                             <thead class="table-light">
                                 <tr>
                                     <th>Username Account</th>
-                                    <th>Kendaraan Owner Name</th>
-                                    <th>Kendaraan Chassis Number</th>
-                                    <th>Kendaraan Engine Number</th>
-                                    <th>Kendaraan Plat</th>
-                                    <th>Kendaraan Type</th>
+                                    <th>Vehicle Owner Name</th>
+                                    <th>Vehicle Chassis Number</th>
+                                    <th>Vehicle Engine Number</th>
+                                    <th>Vehicle Plat</th>
+                                    <th>Vehicle Type</th>
                                 </tr>
                             </thead>
                                 <hr>
@@ -856,20 +881,20 @@ if ($isLoggedIn) {
                                                         <input type="text" class="form-control" id="namaTax" name="namaTax" placeholder="Enter full name" required>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label for="plat" class="form-label">Kendaraan Plat<span style="color: red;">*</span></label>
+                                                        <label for="plat" class="form-label">Vehicle Plat<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="plat" name="plat" placeholder="Enter Kendaraan Plat" required>
                                                         <small id="numberHelp" class="form-text text-muted">Format : XX YYYY XX (Capital)</small>
                                                     </div>
                                                     <div class="mb-3">
-                                                        <label for="jenisKendaraan" class="form-label">Kendaraan Type<span style="color: red;">*</span></label>
+                                                        <label for="jenisKendaraan" class="form-label">Vehicle Type<span style="color: red;">*</span></label>
                                                         <select class="form-select" id="jenisKendaraan" name="jenisKendaraan" required>
                                                             <option value="">Select Type</option>
-                                                            <option value="PRIBADI">Private Kendaraan</option>
-                                                            <option value="UMUM">Public Kendaraan</option>
-                                                            <option value="NIAGA">Commercial Kendaraan</option>
-                                                            <option value="DINAS">Official Kendaraan</option>
-                                                            <option value="KHUSUS">Special Kendaraan</option>
-                                                            <option value="LISTRIK">Electric Kendaraan</option>
+                                                            <option value="PRIBADI">Private Vehicle</option>
+                                                            <option value="UMUM">Public Vehicle</option>
+                                                            <option value="NIAGA">Commercial Vehicle</option>
+                                                            <option value="DINAS">Official Vehicle</option>
+                                                            <option value="KHUSUS">Special Vehicle</option>
+                                                            <option value="LISTRIK">Electric Vehicle</option>
                                                         
                                                         </select>
                                                     </div>
@@ -881,7 +906,7 @@ if ($isLoggedIn) {
                                                     <div class="mb-3">
                                                         <label for="lastPay" class="form-label">Latest Payment Date<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="lastPay" name="lastPay" placeholder="Enter Latest Payment Date" required>
-                                                        <small id="numberHelp" class="form-text text-muted">Format : dd-mm-yyyy</small>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : YYYY-MM-DD</small>
                                                     </div>
                                                     <div class="mb-3">
                                                         <label for="dendaPajak" class="form-label">Tax Fine<span style="color: red;">*</span></label>
@@ -899,7 +924,7 @@ if ($isLoggedIn) {
                                                     <div class="mb-3">
                                                         <label for="nextPay" class="form-label">Next Payment Date<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="nextPay" name="nextPay" placeholder="EnterNext Payment Date" required>
-                                                        <small id="numberHelp" class="form-text text-muted">Format : dd-mm-yyyy</small>
+                                                        <small id="numberHelp" class="form-text text-muted">Format : YYYY-MM-DD</small>
                                                     </div>
                                                     <button type="submit" class="btn btn-primary" name="submit">Add Data</button>
                                                 </form>
@@ -912,8 +937,8 @@ if ($isLoggedIn) {
                             <table class="table table-bordered align-middle" id="members-table">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Kendaraan Plat</th>
-                                        <th>Kendaraan Type</th>
+                                        <th>Vehicle Plat</th>
+                                        <th>Vehicle Type</th>
                                         <th>Full Name</th>
                                         <th>Total Tax</th>
                                         <th>Latest Payment</th>
@@ -1011,19 +1036,19 @@ if ($isLoggedIn) {
                 } elseif ($page == 'point') {
                     ?>
 
-                <!-- Tabs -->
-                <ul class="nav nav-tabs mb-4" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link" id="btn-vouchers" data-bs-toggle="tab" data-bs-target="#voucherTab">
-                            Voucher Management
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link active" id="btn-points" data-bs-toggle="tab" data-bs-target="#pointTab">
-                            Point Management
-                        </button>
-                    </li>
-                </ul>
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs mb-4" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link" id="btn-vouchers" data-bs-toggle="tab" data-bs-target="#voucherTab">
+                                Voucher Management
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link active" id="btn-points" data-bs-toggle="tab" data-bs-target="#pointTab">
+                                Point Management
+                            </button>
+                        </li>
+                    </ul>
 
                 <!-- Tab Content -->
                 <div class="tab-content">
@@ -1033,31 +1058,31 @@ if ($isLoggedIn) {
                             <input type="text" class="form-control search-input" placeholder="Search" />
                         </div>
 
-                        <div class="table-responsive">
-                            <table class="table custom-table">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Name</th>
-                                        <th>Last Update</th>
-                                        <th>Total Points</th>
-                                        <th>Type</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php
-                                    $query = "SELECT p.*, a.username, ph.type, ph.transactionDate 
-                                            FROM point p 
-                                            JOIN akun a ON p.akunId = a.akunId
-                                            LEFT JOIN point_history ph ON p.akunId = ph.akunId
-                                            ORDER BY ph.transactionDate DESC";
-                                    $result = $conn->query($query);
-                                    $no = 1;
-
-                                    while ($row = $result->fetch_assoc()):
-                                    ?>
+                            <div class="table-responsive">
+                                <table class="table custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Name</th>
+                                            <th>last update</th>
+                                            <th>total point</th>
+                                            <th>type</th>
+                                            <th>status</th>
+                                            <th>action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        $query = "SELECT p.*, a.username, ph.type, ph.transactionDate 
+                                                 FROM point p 
+                                                 JOIN akun a ON p.akunId = a.akunId
+                                                 LEFT JOIN point_history ph ON p.akunId = ph.akunId
+                                                 ORDER BY ph.transactionDate DESC";
+                                        $result = $conn->query($query);
+                                        $no = 1;
+                                        
+                                        while ($row = $result->fetch_assoc()):
+                                        ?>
                                         <tr>
                                             <td><?php echo $no++; ?></td>
                                             <td><?php echo htmlspecialchars($row['username']); ?></td>
