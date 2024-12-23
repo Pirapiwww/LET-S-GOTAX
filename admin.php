@@ -176,7 +176,7 @@ if ($isLoggedIn) {
         }
 
         // ** Bagian untuk add data tax **
-        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax']) && isset($_POST['lastPay']) && isset($_POST['statusPajak']) && isset($_POST['dendaPajak']) && isset($_POST['nextPay']) && isset($_POST['jenisKendaraan'])) {
+        if (isset($_POST['namaTax']) && isset($_POST['plat']) && isset($_POST['totalTax']) && isset($_POST['lastPay']) && isset($_POST['statusPajak']) && isset($_POST['dendaPajak']) && isset($_POST['nextPay']) && isset($_POST['jenisKendaraan']) && isset($_POST['tipeKendaraan'])) {
             $namaTax = $_POST['namaTax'] ?? null;
             $plat = $_POST['plat'] ?? null;
             $totalTax = $_POST['totalTax'] ?? null;
@@ -185,6 +185,7 @@ if ($isLoggedIn) {
             $lastPay = $_POST['lastPay'] ?? null;
             $nextPay = $_POST['nextPay'] ?? null;
             $jenisKendaraan = $_POST['jenisKendaraan'] ?? null;
+            $tipeKendaraan = $_POST['tipeKendaraan'] ?? null;
         
             // Validasi input
             if (empty($plat) || empty($namaTax)) {
@@ -204,12 +205,12 @@ if ($isLoggedIn) {
                 echo "Data tax dengan plat kendaraan ini sudah terdaftar!";
             } else {
                 // Masukkan data baru ke tabel tax
-                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, nextPay, jenisKendaraan) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql_insert = "INSERT INTO tax (adminId, namaLengkap, platKendaraan, totalPajak, lastPay, status, dendaPajak, nextPay, jenisKendaraan, tipeKendaraan) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
                 if ($stmt_insert) {
                     $stmt_insert->bind_param(
-                        "issssssss", 
+                        "isssssssss", 
                         $userId, 
                         $namaTax, 
                         $plat, 
@@ -218,7 +219,8 @@ if ($isLoggedIn) {
                         $statusPajak, 
                         $dendaPajak, 
                         $nextPay, 
-                        $jenisKendaraan
+                        $jenisKendaraan,
+                        $tipeKendaraan
                     );
                     $stmt_insert->execute();
                     echo "Data tax berhasil ditambahkan!";
@@ -798,6 +800,7 @@ if ($isLoggedIn) {
                                     <th>Vehicle Engine Number</th>
                                     <th>Vehicle Plat</th>
                                     <th>Vehicle Type</th>
+                                    <th>Kind of Vehicle</th>
                                 </tr>
                             </thead>
                                 <hr>
@@ -836,6 +839,7 @@ if ($isLoggedIn) {
                                                     <td><?php echo htmlspecialchars($rowKendaraan['No_Mesin']); ?></td>
                                                     <td><?php echo htmlspecialchars($rowKendaraan['No_Plat']); ?></td>
                                                     <td><?php echo htmlspecialchars($rowKendaraan['jenisKendaraan']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowKendaraan['tipeKendaraan']); ?></td>
                                                 </tr>
                                                 <?php
                                             }
@@ -899,6 +903,14 @@ if ($isLoggedIn) {
                                                         </select>
                                                     </div>
                                                     <div class="mb-3">
+                                                        <label for="tipeKendaraan" class="form-label">Vehicle Type<span style="color: red;">*</span></label>
+                                                        <select class="form-select" id="tipeKendaraan" name="tipeKendaraan" required>
+                                                            <option value="">Select Kind of Vehicle</option>
+                                                            <option value="MOTOR">MOTORCYCLE</option>
+                                                            <option value="MOBIL">CAR</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
                                                         <label for="totalTax" class="form-label">Total Tax<span style="color: red;">*</span></label>
                                                         <input type="text" class="form-control" id="totalTax" name="totalTax" placeholder="Enter Total Tax" required>
                                                         <small id="numberHelp" class="form-text text-muted">Format : Rp. xxx.xxx,-</small>
@@ -939,13 +951,13 @@ if ($isLoggedIn) {
                                     <tr>
                                         <th>Vehicle Plat</th>
                                         <th>Vehicle Type</th>
+                                        <th>Kind of Vehicle</th>
                                         <th>Full Name</th>
                                         <th>Total Tax</th>
                                         <th>Latest Payment</th>
                                         <th>Tax Fine</th>
                                         <th>Tax Status</th>
                                         <th>Next Payment</th>
-                                        
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -963,6 +975,7 @@ if ($isLoggedIn) {
                                                 <tr>
                                                     <td><?php echo htmlspecialchars($row['platKendaraan']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['jenisKendaraan']); ?></td>
+                                                    <td><?php echo htmlspecialchars($row['tipeKendaraan']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['namaLengkap']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['totalPajak']); ?></td>
                                                     <td><?php echo htmlspecialchars($row['lastPay']); ?></td>
