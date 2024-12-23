@@ -472,7 +472,11 @@ if ($isLoggedIn) {
                                 <span class="spanCustom">Contact Us</span>
                             </a>
                         </div>
-                        <p style="padding-top: 20px;"><a href="#" class="text-danger">Delete Account</a></p>
+                        <form method="POST" action="deleteAccount.php">
+                            <button type="submit" name="deleteAccount" class="btn btn-danger">Delete Account</button>
+                        </form>
+
+
                     </div>
                     <?php
                     //untuk account 

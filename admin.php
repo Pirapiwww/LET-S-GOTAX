@@ -1101,7 +1101,7 @@ if ($isLoggedIn) {
                                                 <hr>
                                                     <td><?php echo htmlspecialchars($row['username']); ?></td>
                                                     <td><?php echo htmlspecialchars($rowContact['titleContact']); ?></td>
-                                                    <td><?php echo htmlspecialchars($rowContact['massageContact']); ?></td>
+                                                    <td><?php echo htmlspecialchars($rowContact['massageContact']); ?></td><tr>
                                                 <?php
                                                 }
                                             }
