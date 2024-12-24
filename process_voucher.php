@@ -26,9 +26,9 @@ function addVoucher() {
         $shopLogo = uploadImage($_FILES['shopLogo']);
         
         $query = "INSERT INTO vouchers (adminId, shopName, shopLogo, voucherValue, pointCost, 
-                                      description, maxStock, expiryDate) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-                 
+                                    description, maxStock, expiryDate) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                
         $stmt = $conn->prepare($query);
         $stmt->bind_param('issiisis', 
             $_SESSION['user_id'],

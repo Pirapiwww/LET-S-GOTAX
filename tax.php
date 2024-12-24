@@ -61,6 +61,47 @@
         }
         $stmt2->close();
 
+        // Cek apakah ada data di backupTax (kalau ada hapus dan kembalikan ke tax)
+        $query3 = "SELECT * FROM backupTax WHERE akunId = ?";
+        $stmt3 = $conn->prepare($query3);
+        $stmt3->bind_param('i', $userId);
+        $stmt3->execute();
+        $result3 = $stmt3->get_result();
+
+        if ($result3->num_rows > 0) {
+            $user3 = $result3->fetch_assoc();
+            $idKendaraan = $user3['id_kendaraan'];
+
+            $query = "SELECT No_Plat FROM kendaraan WHERE id_kendaraan = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param('i', $idKendaraan);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $Noplat = '';
+
+            if ($result->num_rows > 0) {
+                $user = $result->fetch_assoc();
+                $Noplat = $user['No_Plat']; // Perbaikan di sini untuk memastikan akses ke array $user
+            }
+
+            $updateQuery = "UPDATE tax SET totalPajak = ?, lastPay = ?, status = ?, dendaPajak = ?, nextPay = ? WHERE platKendaraan = ?";
+            $stmtUpdate = $conn->prepare($updateQuery);
+            $stmtUpdate->bind_param('ssssss', $user3['backupTotalPajak'], $user3['backupLastPay'], $user3['backupStatus'], $user3['backupDendaPajak'], $user3['backupNextPay'], $Noplat);
+
+            $stmtUpdate->execute();
+            $stmtUpdate->close();
+
+            // Hapus data untuk id_kendaraan yang tertera
+            $deleteQuery = "DELETE FROM backupTax WHERE id_kendaraan = ?"; // Perbaikan pada sintaks SQL DELETE
+            $stmtDelete = $conn->prepare($deleteQuery);
+            $stmtDelete->bind_param('i', $idKendaraan);
+
+            $stmtDelete->execute();
+            $stmtDelete->close();
+        }
+        $stmt3->close();
+
         // untuk pilih data plat
         if (isset($_GET['select']) && isset($_GET['vehicle_id'])) {
             $akunId = $_GET['select'];
@@ -120,37 +161,38 @@
             exit;
         }
         
+
         if (isset($_GET['taxCheck'])) {
             $plat = $_GET['taxCheck'];
-        
+
             $currentDate = date('Y-m-d');
-        
+
             $sql = "SELECT * FROM tax WHERE platKendaraan = ?";
             $stmt = $conn->prepare($sql);
             $stmt->bind_param("s", $plat);
             $stmt->execute();
             $result = $stmt->get_result();
-        
+
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
-                
+
                 $nextPay = $row['nextPay'];
                 $PKB = $row['PKB'];
                 $tipe = $row['tipeKendaraan'];
-                $platKendaraan = $row['platKendaraan'];  // Tambahkan ini
-        
+                $platKendaraan = $row['platKendaraan'];
+
                 $status = '';
                 $totalPajak = '';
                 $dendaPajak = '';
                 $SWDKLLJ = '';
-        
-                $lastPay = $row['nextPay'];  // Bisa gunakan nextPay yang lama sebagai lastPay
-                $NewnextPay = $currentDate;
-        
+                $NewnextPay = '';
+
+                $lastPay = $row['nextPay'];
+
                 $SWDKLLJ_clean = '';
                 $PKB_clean = preg_replace('/[^0-9]/', '', $PKB);
                 $dendaPajak_clean = '';
-        
+
                 // Penentuan tarif SWDKLLJ berdasarkan tipe kendaraan
                 if ($tipe == 'MOTOR') {
                     $SWDKLLJ = 'Rp. 32.000,-';
@@ -159,35 +201,35 @@
                     $SWDKLLJ = 'Rp. 100.000,-';
                     $SWDKLLJ_clean = preg_replace('/[^0-9]/', '', $SWDKLLJ);
                 }
-        
+
                 if (strtotime($nextPay) !== false) {
                     $nextPayDate = new DateTime($nextPay);
                     $currentDateObj = new DateTime($currentDate);
-        
+
                     // Menghitung selisih waktu
                     $interval = $currentDateObj->diff($nextPayDate);
-        
+
                     $yearsDifference = $interval->y; // Selisih tahun
                     $monthsDifference = $interval->m; // Selisih bulan
                     $daysDifference = $interval->d; // Selisih hari
-        
+
                     // Total selisih bulan
                     $totalMonthsDifference = ($yearsDifference * 12) + $monthsDifference;
-        
+
                     // Kondisi jika tanggal terlambat lebih dari 0 bulan
                     if ($totalMonthsDifference > 0) {
-                        $totalPajak_clean = $totalMonthsDifference * 25 / 100 * $PKB_clean + $SWDKLLJ_clean;
-                        $dendaPajak_clean = $totalPajak_clean - $PKB_clean;
-        
+                        $dendaPajak_clean = $totalMonthsDifference * 25 / 100 * $PKB_clean + $SWDKLLJ_clean;
+                        $totalPajak_clean = $PKB_clean + $SWDKLLJ_clean + $dendaPajak_clean;
+
                         $dendaPajak = "Rp. " . number_format($dendaPajak_clean, 0, ',', '.') . ",-";
                         $totalPajak = "Rp. " . number_format($totalPajak_clean, 0, ',', '.') . ",-"; 
                         $status = 'OVERDUE';
                     } 
                     // Kondisi untuk rentang keterlambatan 2 hari sampai 29 hari
                     elseif ($totalMonthsDifference == 0 && $daysDifference >= 2 && $daysDifference < 30) {
-                        $totalPajak_clean = 25/100 * $PKB_clean + $SWDKLLJ_clean;
-                        $dendaPajak_clean = $totalPajak_clean - $PKB_clean;
-        
+                        $dendaPajak_clean = 25 / 100 * $PKB_clean + $SWDKLLJ_clean;
+                        $totalPajak_clean = $PKB_clean + $SWDKLLJ_clean + $dendaPajak_clean;
+
                         $totalPajak = "Rp. " . number_format($totalPajak_clean, 0, ',', '.') . ",-";
                         $dendaPajak = "Rp. " . number_format($dendaPajak_clean, 0, ',', '.') . ",-";
                         $status = 'OVERDUE';
@@ -196,19 +238,22 @@
                     else {
                         $totalPajak_clean = $PKB_clean + $SWDKLLJ_clean;
                         $dendaPajak_clean = 0;
-        
+
                         $totalPajak = "Rp. " . number_format($totalPajak_clean, 0, ',', '.') . ",-";
                         $dendaPajak = "Rp. " . number_format($dendaPajak_clean, 0, ',', '.') . ",-";
                         $status = 'ON TIME';
                     }
-        
+
+                    // Set NewnextPay sebagai currentDate + 1 tahun
+                    $NewnextPay = (new DateTime($currentDate))->modify('+1 year')->format('Y-m-d');
+
                     // Menyiapkan query update
                     $updateQuery = "UPDATE tax 
                                     SET totalPajak = ?, lastPay = ?, status = ?, dendaPajak = ?, nextPay = ? 
                                     WHERE platKendaraan = ?";
-        
+
                     $stmtUpdate = $conn->prepare($updateQuery);
-        
+
                     // Bind parameter sesuai dengan tipe data yang dibutuhkan
                     $stmtUpdate->bind_param('ssssss', 
                                             $totalPajak, 
@@ -217,14 +262,8 @@
                                             $dendaPajak, 
                                             $NewnextPay, 
                                             $platKendaraan);
-        
-                    // Eksekusi query
-                    if ($stmtUpdate->execute()) {
-                        echo "Tax data updated successfully!";
-                    } else {
-                        echo "Failed to update tax data.";
-                    }
-        
+                    
+                    $stmtUpdate->execute();
                     $stmtUpdate->close();
                 }
             } else {
@@ -232,11 +271,11 @@
                 echo "No tax record found for this vehicle.";
                 exit;
             }
-        
+
             // Redirect ke halaman admin setelah proses selesai
-            header("Location: tax.php?subPage=tax");
+            header("Location: tax.php?page=pay&subPage=taxPay");
             exit;
-        }        
+        }
 
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // ** Bagian untuk add akun admin **
@@ -674,7 +713,13 @@
                                                 if($row['statusPilih'] == 'SELECTED'){
                                                     ?>
                                                     <!-- Tombol Next untuk melanjutkan ke tax.php dengan plat kendaraan yang dipilih -->
-                                                    <a href="tax.php?page=pay&subPage=taxPay&taxCheck=<?= $row['No_Plat']; ?>" class="btn btn-dark ms-auto">
+                                                    <form id="taxCheckForm" method="GET" action="tax.php">
+                                                        <input type="hidden" name="taxCheck" value="<?= $row['No_Plat']; ?>">
+                                                        <input type="hidden" name="page" value="pay">
+                                                        <input type="hidden" name="subPage" value="taxPay">
+                                                    </form>
+
+                                                    <a href="#" onclick="document.getElementById('taxCheckForm').submit();" class="btn btn-dark ms-auto">
                                                         Next <span class="ms-2">&rarr;</span>
                                                     </a>
                                                     <?php

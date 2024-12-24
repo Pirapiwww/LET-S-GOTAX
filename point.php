@@ -31,6 +31,47 @@
         }
         $stmt->close();
 
+        // Cek apakah ada data di backupTax (kalau ada hapus dan kembalikan ke tax)
+        $query3 = "SELECT * FROM backupTax WHERE akunId = ?";
+        $stmt3 = $conn->prepare($query3);
+        $stmt3->bind_param('i', $userId);
+        $stmt3->execute();
+        $result3 = $stmt3->get_result();
+
+        if ($result3->num_rows > 0) {
+            $user3 = $result3->fetch_assoc();
+            $idKendaraan = $user3['id_kendaraan'];
+
+            $query = "SELECT No_Plat FROM kendaraan WHERE id_kendaraan = ?";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param('i', $idKendaraan);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            $Noplat = '';
+
+            if ($result->num_rows > 0) {
+                $user = $result->fetch_assoc();
+                $Noplat = $user['No_Plat']; // Perbaikan di sini untuk memastikan akses ke array $user
+            }
+
+            $updateQuery = "UPDATE tax SET totalPajak = ?, lastPay = ?, status = ?, dendaPajak = ?, nextPay = ? WHERE platKendaraan = ?";
+            $stmtUpdate = $conn->prepare($updateQuery);
+            $stmtUpdate->bind_param('ssssss', $user3['backupTotalPajak'], $user3['backupLastPay'], $user3['backupStatus'], $user3['backupDendaPajak'], $user3['backupNextPay'], $Noplat);
+
+            $stmtUpdate->execute();
+            $stmtUpdate->close();
+
+            // Hapus data untuk id_kendaraan yang tertera
+            $deleteQuery = "DELETE FROM backupTax WHERE id_kendaraan = ?"; // Perbaikan pada sintaks SQL DELETE
+            $stmtDelete = $conn->prepare($deleteQuery);
+            $stmtDelete->bind_param('i', $idKendaraan);
+
+            $stmtDelete->execute();
+            $stmtDelete->close();
+        }
+        $stmt3->close();
+
         // Query untuk mendapatkan total point user
         $pointQuery = "SELECT totalPoint FROM point WHERE akunId = ?";
         $pointStmt = $conn->prepare($pointQuery);
@@ -53,7 +94,7 @@
 
         // Query untuk voucher yang tersedia
         $voucherQuery = "SELECT v.*, 
-                           (v.maxStock - v.soldCount) as stockLeft,
+                        (v.maxStock - v.soldCount) as stockLeft,
                            ROUND((v.soldCount / v.maxStock) * 100) as soldPercentage
                     FROM vouchers v 
                     WHERE v.isActive = 1 
