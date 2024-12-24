@@ -158,15 +158,19 @@ INSERT INTO `kendaraan` (`id_kendaraan`, `No_Rangka`, `No_Mesin`, `No_Plat`, `ak
 --
 
 CREATE TABLE `notif` (
-  `notifId` int(11) NOT NULL,
+  `notifId` int(11) NOT NULL AUTO_INCREMENT,
   `akunId` int(11) NOT NULL,
   `adminId` int(11) NOT NULL,
   `tanggalNotif` date NOT NULL,
   `jenisNotif` enum('TAX','POINT','SYSTEM') NOT NULL,
   `descNotif` varchar(255) NOT NULL,
   `descTambahan` varchar(255) NOT NULL,
-  `statusNotif` enum('READ','UNREAD') NOT NULL,
-  `descStatus` enum('SUCCEED','NOT SUCCESS') NOT NULL
+  `statusNotif` enum('READ','UNREAD') NOT NULL DEFAULT 'UNREAD',
+  `descStatus` enum('SUCCEED','NOT SUCCESS') NOT NULL,
+  PRIMARY KEY (`notifId`),
+  KEY `akunId` (`akunId`),
+  KEY `adminId` (`adminId`),
+  KEY `tanggal_idx` (`tanggalNotif`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

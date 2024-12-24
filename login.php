@@ -15,44 +15,29 @@
         $result = $stmt->get_result();
 
         if ($result->num_rows > 0) {
-            $user = $result->fetch_assoc();
+            $row = $result->fetch_assoc();
+            $_SESSION['user_id'] = $row['akunId'];
+            
+            // Add login notification
+            $akunId = $row['akunId'];
+            $adminId = $row['adminId'];
+            $currentDate = date('Y-m-d');
+            $notifDesc = "You have successfully logged into your account, please complete the verification data.";
+            
+            $insertNotif = "INSERT INTO notif (akunId, adminId, tanggalNotif, jenisNotif, descNotif, descTambahan, statusNotif, descStatus) 
+                            VALUES (?, ?, ?, 'SYSTEM', ?, '', 'UNREAD', 'SUCCEED')";
+            
+            $stmtNotif = $conn->prepare($insertNotif);
+            $stmtNotif->bind_param('iiss', $akunId, $adminId, $currentDate, $notifDesc);
+            $stmtNotif->execute();
+            $stmtNotif->close();
 
-            // Periksa apakah password di database belum di-hash
-            if (!password_verify($password, $user['password'])) {
-                // Jika password cocok tetapi belum di-hash, hash password tersebut
-                if ($password === $user['password']) {
-                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-                    // Update password yang di-hash ke database
-                    $update_sql = "UPDATE akun SET password = ? WHERE akunId = ?";
-                    $stmt_update = $conn->prepare($update_sql);
-                    $stmt_update->bind_param("si", $hashed_password, $user['akunId']);
-                    $stmt_update->execute();
-
-                    // Login berhasil setelah hashing
-                    $_SESSION['user_id'] = $user['akunId'];
-                    $_SESSION['username'] = $user['username'];
-
-                    header("Location: home.php");
-
-                    exit;
-                } else {
-                    $error = "Password incorrect!";
-                }
-            } else {
-                // Jika password sudah di-hash, langsung verifikasi
-                if (password_verify($password, $user['password'])) {
-                    $_SESSION['user_id'] = $user['akunId'];
-                    $_SESSION['username'] = $user['username'];
-
-                    header("Location: home.php");
-                    exit;
-                } else {
-                    $error = "Password incorrect!";
-                }
-            }
+            // Redirect to home page or dashboard
+            header("Location: home.php");
+            exit();
         } else {
-            $error = "Email incorrect or not found!";
+            // Login failed
+            echo "<script>alert('Email atau password salah!');</script>";
         }
 
         //untuk tabel admin

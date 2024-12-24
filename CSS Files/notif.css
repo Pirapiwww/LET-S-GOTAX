@@ -1,3 +1,4 @@
+
 body {
     font-family: 'Cantata One', serif;
     font-size: 20px;
@@ -31,4 +32,36 @@ nav.navbar {
 .custom-badge {
     background-color: grey !important;  /* Mengubah warna background menjadi abu-abu */
     color: white; /* Menjaga teks tetap putih */
+}
+.card {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.bi {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(0,0,0,0.1);
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-primary {
+    color: #0d6efd;
+}
+
+.text-warning {
+    color: #ffc107;
 }
