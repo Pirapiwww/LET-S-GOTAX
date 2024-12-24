@@ -80,7 +80,7 @@ if ($isLoggedIn) {
     $stmt2->close();
 
     // Cek apakah ada data di backupTax (kalau ada hapus dan kembalikan ke tax)
-    $query3 = "SELECT * FROM backupTax WHERE akunId = ?";
+    $query3 = "SELECT * FROM backuptax WHERE akunId = ?";
     $stmt3 = $conn->prepare($query3);
     $stmt3->bind_param('i', $userId);
     $stmt3->execute();
@@ -111,7 +111,7 @@ if ($isLoggedIn) {
         $stmtUpdate->close();
 
         // Hapus data untuk id_kendaraan yang tertera
-        $deleteQuery = "DELETE FROM backupTax WHERE id_kendaraan = ?"; // Perbaikan pada sintaks SQL DELETE
+        $deleteQuery = "DELETE FROM backuptax WHERE id_kendaraan = ?"; // Perbaikan pada sintaks SQL DELETE
         $stmtDelete = $conn->prepare($deleteQuery);
         $stmtDelete->bind_param('i', $idKendaraan);
 
