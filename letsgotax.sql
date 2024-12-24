@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 23, 2024 at 01:04 PM
+-- Generation Time: Dec 24, 2024 at 01:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -65,6 +65,24 @@ CREATE TABLE `akun` (
 
 INSERT INTO `akun` (`akunId`, `adminId`, `email`, `username`, `password`, `photoProfile`, `status`) VALUES
 (8, 1, 'unity@gmail.com', 'UNITY', '$2y$10$OpqnJFnbHSb5tkKe0o8aIOTGl6IGeVSjKoR8doEg6vTCVcXk8OO32', 'profileDefault.jpg', 'VERIFIED');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `backuptax`
+--
+
+CREATE TABLE `backuptax` (
+  `backupTax` int(11) NOT NULL,
+  `id_kendaraan` int(11) NOT NULL,
+  `taxId` int(11) NOT NULL,
+  `akunId` int(11) NOT NULL,
+  `backupLastPay` varchar(255) NOT NULL,
+  `backupNextPay` varchar(255) NOT NULL,
+  `backupDendaPajak` varchar(255) NOT NULL,
+  `backupTotalPajak` varchar(255) NOT NULL,
+  `backupStatus` enum('ON TIME','OVERDUE') NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -159,13 +177,10 @@ CREATE TABLE `notif` (
 
 CREATE TABLE `pembayaran` (
   `id_pembayaran` int(11) NOT NULL,
-  `Bukti_Pembayaran` varchar(255) DEFAULT NULL,
   `No_Tagihan` varchar(255) NOT NULL,
   `Tanggal_Bayar` date NOT NULL,
-  `Metode_Pembayaran` varchar(255) NOT NULL,
-  `id_kendaraan` varchar(255) DEFAULT NULL,
-  `id_Status_Pembayaran` varchar(255) DEFAULT NULL,
-  `status` enum('PENDING','PROCESSED','COMPLETED','FAILED') NOT NULL DEFAULT 'PENDING',
+  `id_kendaraan` int(11) NOT NULL,
+  `status` enum('CANCELED','SUCCEED') NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -201,27 +216,6 @@ CREATE TABLE `point_history` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `status_pembayaran`
---
-
-CREATE TABLE `status_pembayaran` (
-  `id_Status_Pembayaran` varchar(50) NOT NULL,
-  `Nama_Status_Pembayaran` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `status_pembayaran`
---
-
-INSERT INTO `status_pembayaran` (`id_Status_Pembayaran`, `Nama_Status_Pembayaran`) VALUES
-('STP1', 'Pending'),
-('STP2', 'Processed'),
-('STP3', 'Completed'),
-('STP4', 'Failed');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `tax`
 --
 
@@ -246,8 +240,7 @@ CREATE TABLE `tax` (
 --
 
 INSERT INTO `tax` (`taxId`, `adminId`, `namaLengkap`, `platKendaraan`, `jenisKendaraan`, `tipeKendaraan`, `totalPajak`, `lastPay`, `status`, `dendaPajak`, `nextPay`, `PKB`, `SWDKLLJ`) VALUES
-(2, 1, 'Aliya Hanifa', 'AB 2103 WS', 'PRIBADI', 'MOBIL', 'Rp. 400.000,-', '2023-12-24', 'ON TIME', 'Rp. 0,-', '2024-12-24', 'Rp. 300.000,-', 'Rp. 100.000,-'),
-(3, 1, 'Unity Lity ', 'AB 2891 SL', 'PRIBADI', 'MOTOR', 'Rp. 232.000,-', '2023-12-25', 'ON TIME', 'Rp. 0,-', '2024-12-25', 'Rp. 200.000,-', 'Rp. 32.000,-');
+(2, 1, 'Aliya Hanifa', 'AB 2103 WS', 'PRIBADI', 'MOBIL', 'Rp. 400.000,-', '2023-12-24', 'ON TIME', 'Rp. 0,-', '2024-12-24', 'Rp. 300.000,-', 'Rp. 100.000,-');
 
 -- --------------------------------------------------------
 
@@ -306,6 +299,15 @@ ALTER TABLE `akun`
   ADD KEY `adminId` (`adminId`);
 
 --
+-- Indexes for table `backuptax`
+--
+ALTER TABLE `backuptax`
+  ADD PRIMARY KEY (`backupTax`),
+  ADD UNIQUE KEY `id_kendaraan` (`id_kendaraan`),
+  ADD UNIQUE KEY `taxId` (`taxId`),
+  ADD UNIQUE KEY `akunId` (`akunId`);
+
+--
 -- Indexes for table `contact`
 --
 ALTER TABLE `contact`
@@ -347,8 +349,7 @@ ALTER TABLE `notif`
 ALTER TABLE `pembayaran`
   ADD PRIMARY KEY (`id_pembayaran`),
   ADD UNIQUE KEY `No_Tagihan` (`No_Tagihan`),
-  ADD KEY `id_kendaraan` (`id_kendaraan`),
-  ADD KEY `id_Status_Pembayaran` (`id_Status_Pembayaran`);
+  ADD KEY `id_kendaraan` (`id_kendaraan`);
 
 --
 -- Indexes for table `point`
@@ -363,12 +364,6 @@ ALTER TABLE `point`
 ALTER TABLE `point_history`
   ADD PRIMARY KEY (`historyId`),
   ADD KEY `akunId` (`akunId`);
-
---
--- Indexes for table `status_pembayaran`
---
-ALTER TABLE `status_pembayaran`
-  ADD PRIMARY KEY (`id_Status_Pembayaran`);
 
 --
 -- Indexes for table `tax`
@@ -407,6 +402,12 @@ ALTER TABLE `admin`
 --
 ALTER TABLE `akun`
   MODIFY `akunId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
+-- AUTO_INCREMENT for table `backuptax`
+--
+ALTER TABLE `backuptax`
+  MODIFY `backupTax` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `contact`
@@ -479,6 +480,13 @@ ALTER TABLE `akun`
   ADD CONSTRAINT `akun_ibfk_1` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
 
 --
+-- Constraints for table `backuptax`
+--
+ALTER TABLE `backuptax`
+  ADD CONSTRAINT `backuptax_ibfk_1` FOREIGN KEY (`id_kendaraan`) REFERENCES `kendaraan` (`id_kendaraan`),
+  ADD CONSTRAINT `backuptax_ibfk_2` FOREIGN KEY (`taxId`) REFERENCES `tax` (`taxId`);
+
+--
 -- Constraints for table `databio`
 --
 ALTER TABLE `databio`
@@ -491,6 +499,12 @@ ALTER TABLE `databio`
 ALTER TABLE `kendaraan`
   ADD CONSTRAINT `kendaraan_ibfk_1` FOREIGN KEY (`akunId`) REFERENCES `akun` (`akunId`),
   ADD CONSTRAINT `kendaraan_ibfk_2` FOREIGN KEY (`adminId`) REFERENCES `admin` (`adminId`);
+
+--
+-- Constraints for table `pembayaran`
+--
+ALTER TABLE `pembayaran`
+  ADD CONSTRAINT `pembayaran_ibfk_1` FOREIGN KEY (`id_kendaraan`) REFERENCES `kendaraan` (`id_kendaraan`);
 
 --
 -- Constraints for table `point_history`
